@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
 
-const userSchema = mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-    trim: true,
-  },
+const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
@@ -15,31 +10,21 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  additionalDetails: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "Profile",
-  },
-  image: {
-    type: String,
-    required: true,
-  },
-  token: {
-    type: String,
-  },
-  resetPasswordExpires: {
-    type: Date,
-  },
-  ridePublished: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "ridePublished",
-    },
-  ],
-  rideBooked: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "rideBooked",
-  },
+  // additionalDetails: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   required: true,
+  //   ref: "Profile",
+  // },
+  // image: {
+  //   type: String,
+  //   required: true,
+  // },
+  // token: {
+  //   type: String,
+  // },
+  // resetPasswordExpires: {
+  //   type: Date,
+  // },
 });
 
 const User = mongoose.model("User", userSchema);
