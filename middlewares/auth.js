@@ -1,39 +1,35 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const User = require("../models/User");
 
 exports.auth = async (req, res, next) => {
   try {
-    // extract token
+    // extract JWT token
     const token =
-      req.cookies.token ||
-      req.body.token ||
-      req.header("Authorization").replace("Bearer ", "");
+      req.cookies.token || req.header("Authorization").replace("Bearer ", "");
+
     // if token is missing, then return response
-    if (!token) {
+    if (!token || token == undefined) {
       return res.status(401).json({
         success: false,
-        message: "Token is missing",
+        message: "Token Missing!",
       });
     }
 
     //verity the token
     try {
-      const decode = jwt.verify(token, process.env.JWT_SECRET);
-      console.log(decode);
-      req.user = decode;
+      const payload = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = payload;
     } catch (err) {
-      //verification issue
       return res.status(401).json({
         success: false,
         message: "token is invalid",
-      }); 
+      });
     }
     next();
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: "Something went wrong while validating the token",
+      message: "Something went wrong, while validating the token",
     });
   }
 };
