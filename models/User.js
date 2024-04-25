@@ -10,21 +10,32 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // additionalDetails: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   required: true,
-  //   ref: "Profile",
-  // },
-  // image: {
-  //   type: String,
-  //   required: true,
-  // },
-  // token: {
-  //   type: String,
-  // },
-  // resetPasswordExpires: {
-  //   type: Date,
-  // },
+  additionalDetails: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "Profile",
+  },
+  image: {
+    type: String,
+  },
+  token: {
+    type: String,
+  },
+  resetPasswordExpires: {
+    type: Date,
+  },
+  rideBooked: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RideBooked",
+    },
+  ],
+  ridePublished: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RidePublished",
+    },
+  ],
 });
 
 const User = mongoose.model("User", userSchema);
