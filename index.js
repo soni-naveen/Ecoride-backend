@@ -6,6 +6,7 @@ const userRoutes = require("./routes/user");
 const { cloudinaryConnect } = require("./config/cloudinary");
 const fileUpload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 require("dotenv").config();
 
 //setting up port number
@@ -38,7 +39,6 @@ cloudinaryConnect();
 
 // Setting up routes
 app.use("/api/v1/auth", userRoutes);
-app.use("/api/v1/profile", profileRoutes);
 
 // Testing the server
 app.get("/", (req, res) => {

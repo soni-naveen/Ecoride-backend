@@ -11,7 +11,6 @@ const rideBooked = new mongoose.Schema({
   },
   bookingStatus: {
     type: String,
-    required: true,
   },
 });
 

@@ -1,12 +1,13 @@
 const User = require("../models/User");
 const OTP = require("../models/OTP");
 const otpGenerator = require("otp-generator");
+const mailSender = require("../utils/mailSender");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 // SendOTP
-exports.sendOTP = async (req, res) => {
+exports.sendotp = async (req, res) => {
   try {
     // fetch email from request body
     const { email } = req.body;
@@ -95,19 +96,17 @@ exports.signup = async (req, res) => {
     }
 
     //find most recent OTP stored for the user
-    const recentOTP = await OTP.findOne({ email })
-      .sort({ createdAt: -1 })
-      .limit(1);
-    console.log(recentOTP);
+    const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+    console.log(response);
 
     //validate OTP
-    if (recentOTP.length == 0) {
+    if (response.length == 0) {
       //OTP not found
       return res.status(400).json({
         success: false,
         message: "OTP not found",
       });
-    } else if (otp != recentOTP) {
+    } else if (otp != response[0].otp) {
       //Invalid OTP
       res.status(400).json({
         success: true,
@@ -128,7 +127,7 @@ exports.signup = async (req, res) => {
 
     const user = await User.create({
       email,
-      password,
+      password: hashedPassword,
       additionalDetails: profileDetails._id,
       image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`,
     });
