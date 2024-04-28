@@ -1,33 +1,56 @@
 const express = require("express");
-
 // creates an Express application instance
 const app = express();
-
-//load config from env file
+const database = require("./config/database");
+const userRoutes = require("./routes/user");
+const { cloudinaryConnect } = require("./config/cloudinary");
+const fileUpload = require("express-fileupload");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
+
+//setting up port number
 const PORT = process.env.PORT || 4000;
 
 //cookie-parser
-const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
-//middleware to parse json request body
-app.use(express.json());
-
-//import and mount the API routes
-const route = require("./routes/route");
-app.use("/api/v1", route);
-
-//default Route
-app.get("/", (req, res) => {
-  res.send(`<h1> This is HOMEPAGE </h1>`);
-});
-
 //connect to the database
-const dbConnect = require("./config/database");
-dbConnect();
+database.connect();
 
-//activate
-app.listen(PORT, () => {
-  console.log(`Server is running at port ${PORT}`);
+// Middlewares
+app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
+
+// Connecting to cloudinary
+cloudinaryConnect();
+
+// Setting up routes
+app.use("/api/v1/auth", userRoutes);
+app.use("/api/v1/profile", profileRoutes);
+
+// Testing the server
+app.get("/", (req, res) => {
+  return res.json({
+    success: true,
+    message: "Your server is up and running ...",
+  });
 });
+
+// Listening to the server
+app.listen(PORT, () => {
+  console.log(`App is listening at ${PORT}`);
+});
+
+// End of code.
