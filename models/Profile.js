@@ -9,6 +9,9 @@ const profileSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  email: {
+    type: String,
+  },
   dateOfBirth: {
     type: String,
   },

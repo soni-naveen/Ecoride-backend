@@ -1,7 +1,9 @@
 const User = require("../models/User");
 const OTP = require("../models/OTP");
+const Profile = require("../models/Profile");
 const otpGenerator = require("otp-generator");
 const mailSender = require("../utils/mailSender");
+const { passwordUpdated } = require("../mail/templates/passwordUpdate");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -97,7 +99,6 @@ exports.signup = async (req, res) => {
 
     //find most recent OTP stored for the user
     const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
-    console.log(response);
 
     //validate OTP
     if (response.length == 0) {
@@ -121,6 +122,7 @@ exports.signup = async (req, res) => {
     const profileDetails = await Profile.create({
       firstName: null,
       lastName: null,
+      email: email,
       dateOfBirth: null,
       mobileNumber: null,
     });
@@ -129,7 +131,7 @@ exports.signup = async (req, res) => {
       email,
       password: hashedPassword,
       additionalDetails: profileDetails._id,
-      image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`,
+      image: `https://api.dicebear.com/5.x/initials/svg?seed=${email}`,
     });
 
     return res.status(200).json({
@@ -175,7 +177,7 @@ exports.login = async (req, res) => {
         id: user._id,
       };
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "2h",
+        expiresIn: "24h",
       });
       // user = user.toObject();
       user.token = token;
@@ -188,7 +190,7 @@ exports.login = async (req, res) => {
         // A cookie with the HttpOnly attribute is inaccessible to the JavaScript Document.cookie API; it's only sent to the server
       };
       res.cookie("token", token, options).status(200).json({
-        sucess: true,
+        success: true,
         token,
         user,
         message: "Logged in successfully",
