@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const database = require("./config/database");
 const userRoutes = require("./routes/user");
+const profileRoutes = require("./routes/profile");
 const { cloudinaryConnect } = require("./config/cloudinary");
 const fileUpload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
@@ -39,6 +40,7 @@ cloudinaryConnect();
 
 // Setting up routes
 app.use("/api/v1/auth", userRoutes);
+app.use("/api/v1/profile", profileRoutes);
 
 // Testing the server
 app.get("/", (req, res) => {

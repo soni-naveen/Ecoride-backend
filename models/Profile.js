@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 
 const profileSchema = new mongoose.Schema({
+  email: {
+    type: String,
+  },
   firstName: {
     type: String,
     trim: true,
@@ -9,14 +12,14 @@ const profileSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  email: {
-    type: String,
-  },
   dateOfBirth: {
     type: String,
   },
-  mobileNumber: {
-    type: Number,
+  gender: {
+    type: String,
+  },
+  contactNumber: {
+    type: String,
     trim: true,
   },
   govtId: {

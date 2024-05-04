@@ -1,16 +1,16 @@
 const jwt = require("jsonwebtoken");
-// const User = require("../models/User");
 require("dotenv").config();
 
+// This function is used as middleware to authenticate user requests
 exports.auth = async (req, res, next) => {
   try {
-    // extract JWT token
+    // Extracting JWT from request cookies, body or header
     const token =
       req.cookies.token ||
       req.body.token ||
       req.header("Authorization").replace("Bearer ", "");
 
-    // if token is missing, then return response
+    // If JWT is missing, return 401 Unauthorized response
     if (!token) {
       return res.status(401).json({
         success: false,

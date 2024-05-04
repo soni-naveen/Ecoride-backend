@@ -109,39 +109,60 @@ exports.signup = async (req, res) => {
       });
     } else if (otp != response[0].otp) {
       //Invalid OTP
-      res.status(400).json({
-        success: true,
+      return res.status(400).json({
+        success: false,
         message: "Invalid OTP",
       });
+    } else {
+      //Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // entry create in database
+      const profileDetails = await Profile.create({
+        email: email,
+        firstName: null,
+        lastName: null,
+        gender: null,
+        dateOfBirth: null,
+        mobileNumber: null,
+        contactNumber: null,
+      });
+
+      const user = await User.create({
+        email,
+        password: hashedPassword,
+        additionalDetails: profileDetails._id,
+        image: `https://api.dicebear.com/5.x/initials/svg?seed=${email}&chars=1`,
+      });
+
+      const payload = {
+        email: user.email,
+        id: user._id,
+      };
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "24h",
+      });
+      // user = user.toObject();
+      user.token = token;
+      user.password = undefined; //password removed from object(not from database) to protect from hackers
+
+      //create cookie & send response
+      const options = {
+        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        // A cookie with the HttpOnly attribute is inaccessible to the JavaScript Document.cookie API; it's only sent to the server
+      };
+
+      return res.cookie("token", token, options).status(200).json({
+        success: true,
+        token,
+        user,
+        message: "User registered successfully!",
+      });
     }
-
-    //Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // entry create in database
-    const profileDetails = await Profile.create({
-      firstName: null,
-      lastName: null,
-      email: email,
-      dateOfBirth: null,
-      mobileNumber: null,
-    });
-
-    const user = await User.create({
-      email,
-      password: hashedPassword,
-      additionalDetails: profileDetails._id,
-      image: `https://api.dicebear.com/5.x/initials/svg?seed=${email}`,
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "User registered successfully!",
-      user,
-    });
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "User cannot be registered, Please try again!",
     });
