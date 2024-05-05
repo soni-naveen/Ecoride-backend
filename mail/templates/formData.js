@@ -1,10 +1,10 @@
-exports.passwordUpdated = (email, name) => {
-	return `<!DOCTYPE html>
+exports.formData = (email, firstname, lastname, message) => {
+  return `<!DOCTYPE html>
     <html>
     
     <head>
         <meta charset="UTF-8">
-        <title>Password Update Confirmation</title>
+        <title>Contact Form Confirmation</title>
         <style>
             body {
                 background-color: #ffffff;
@@ -40,6 +40,18 @@ exports.passwordUpdated = (email, name) => {
                 margin-bottom: 20px;
             }
     
+            .cta {
+                display: inline-block;
+                padding: 10px 20px;
+                background-color: #FFD60A;
+                color: #000000;
+                text-decoration: none;
+                border-radius: 5px;
+                font-size: 16px;
+                font-weight: bold;
+                margin-top: 20px;
+            }
+    
             .support {
                 font-size: 14px;
                 color: #999999;
@@ -55,16 +67,12 @@ exports.passwordUpdated = (email, name) => {
     
     <body>
         <div class="container">
-            <div class="message">Password Update Confirmation</div>
+            <div class="message">Ecoride form response</div>
             <div class="body">
-                <p>Hey ${firstName}${lastName},</p>
-                <p>Your password has been successfully updated for the email <span class="highlight">${email}</span>.
-                </p>
-                <p>If you did not request this password change, please contact us immediately to secure your account.</p>
-            </div>
-            <div class="support">If you have any questions or need further assistance, please feel free to reach out to us
-                at
-                <a href="mailto:ecoride.in@gmail.com">ecoride.in@gmail.com</a>. We are here to help you!
+                <p>Here are the details provided by user:</p>
+                <p>Name: ${firstname} ${lastname}</p>
+                <p>Email: ${email}</p>
+                <p>Message: ${message}</p>
             </div>
         </div>
     </body>
