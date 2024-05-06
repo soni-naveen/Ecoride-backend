@@ -12,8 +12,11 @@ exports.completeProfile = async (req, res) => {
     const { firstName, lastName, gender, dateOfBirth, contactNumber } =
       req.body;
 
+    const id = req.user.id;
+
     // Find the profile by id
-    const profile = await Profile.find().sort({ _id: -1 }).limit(1);
+    const userDetails = await User.findById(id);
+    const profile = await Profile.findById(userDetails.additionalDetails);
 
     const updatedProfile = await Profile.findByIdAndUpdate(
       profile,
