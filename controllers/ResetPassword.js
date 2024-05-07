@@ -18,7 +18,7 @@ exports.resetPasswordToken = async (req, res) => {
       { email: email },
       {
         token: token,
-        resetPasswordExpires: Date.now() + 3600000,
+        resetPasswordExpires: Date.now() + 300000,
       },
       { new: true }
     );
@@ -29,7 +29,7 @@ exports.resetPasswordToken = async (req, res) => {
     await mailSender(
       email,
       "Password Reset",
-      `Your Link for email verification is ${url}. Please click this url to reset your password.`
+      `Your Link for email verification is <br> ${url}. <br> Please click this url to reset your password.`
     );
 
     res.json({

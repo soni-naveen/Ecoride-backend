@@ -31,7 +31,7 @@ exports.sendotp = async (req, res) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
-    console.log("OTP generated: ", otp);
+    // console.log("OTP generated: ", otp);
 
     //check for unique OTP or not (bad method)
     const result = await OTP.findOne({ otp: otp });
@@ -48,7 +48,7 @@ exports.sendotp = async (req, res) => {
 
     //create an entry for OTP
     const otpBody = await OTP.create(otpPayload);
-    console.log(otpBody);
+    // console.log(otpBody);
 
     //return response successful
     res.status(200).json({
@@ -126,6 +126,13 @@ exports.signup = async (req, res) => {
         dateOfBirth: null,
         mobileNumber: null,
         contactNumber: null,
+        govtId: null,
+        bio: null,
+        vehicle: null,
+        dateJoined: null,
+        noOfRidesPublished: null,
+        overallRating: null,
+        drivingRating: null,
       });
 
       const user = await User.create({
@@ -237,6 +244,7 @@ exports.changePassword = async (req, res) => {
   try {
     // Get user data from req.user
     const userDetails = await User.findById(req.user.id);
+    const profile = await Profile.findById(userDetails.additionalDetails);
 
     // Get old password, new password, and confirm new password from req.body
     const { oldPassword, newPassword } = req.body;
@@ -268,7 +276,7 @@ exports.changePassword = async (req, res) => {
         "Password for your account has been updated",
         passwordUpdated(
           updatedUserDetails.email,
-          `Password updated successfully for ${updatedUserDetails.firstName} ${updatedUserDetails.lastName}`
+          `Password updated successfully for ${profile.firstName} ${profile.lastName}`
         )
       );
       console.log("Email sent successfully:", emailResponse.response);
