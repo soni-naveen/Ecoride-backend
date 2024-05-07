@@ -124,15 +124,14 @@ exports.signup = async (req, res) => {
         lastName: null,
         gender: null,
         dateOfBirth: null,
-        mobileNumber: null,
         contactNumber: null,
         govtId: null,
-        bio: null,
+        about: null,
         vehicle: null,
-        dateJoined: null,
-        noOfRidesPublished: null,
-        overallRating: null,
-        drivingRating: null,
+        dateJoined: Date.now(),
+        noOfRidesPublished: 0,
+        overallRating: 0.0,
+        drivingRating: 0.0,
       });
 
       const user = await User.create({

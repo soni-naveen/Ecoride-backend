@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { auth } = require("../middlewares/auth");
 const {
+  fullProfile,
   deleteAccount,
   updateProfile,
   getAllUserDetails,
@@ -15,6 +16,7 @@ const {
 //                                      Profile routes
 // ********************************************************************************************************
 
+router.get("/fullprofile/:id", fullProfile);
 router.delete("/deleteProfile", auth, deleteAccount);
 router.put("/completeProfile", auth, completeProfile);
 router.put("/updateProfile", auth, updateProfile);

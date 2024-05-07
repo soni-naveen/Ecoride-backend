@@ -25,14 +25,14 @@ const profileSchema = new mongoose.Schema({
   govtId: {
     type: String,
   },
-  bio: {
+  about: {
     type: String,
   },
   vehicle: {
     type: String,
   },
   dateJoined: {
-    type: String,
+    type: Date,
   },
   noOfRidesPublished: {
     type: Number,

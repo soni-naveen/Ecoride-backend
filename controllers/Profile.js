@@ -32,10 +32,28 @@ exports.completeProfile = async (req, res) => {
       { new: true }
     ).exec();
 
+    // Save the updated profile
+    await profile.save();
+
+    const updatedImage = await User.findByIdAndUpdate(
+      userDetails,
+      {
+        image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}&chars=1`,
+      },
+      { new: true }
+    ).exec();
+
+    // Find the updated user details
+    const updatedUserDetails = await User.findByIdAndUpdate(id)
+      .populate("additionalDetails")
+      .exec();
+
     return res.json({
-      profile: updatedProfile,
       success: true,
       message: "Profile completed successfully",
+      updatedUserDetails,
+      updatedImage,
+      updatedProfile,
     });
   } catch (error) {
     console.log(error);
@@ -91,6 +109,23 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
+exports.fullProfile = async (req, res) => {
+  try {
+    const profile = await Profile.findById(req.params.id);
+    if (!profile) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      profile,
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
 exports.deleteAccount = async (req, res) => {
   try {
     const id = req.user.id;
@@ -113,7 +148,7 @@ exports.deleteAccount = async (req, res) => {
     //     { new: true }
     //   );
     // }
-    
+
     // Now Delete User
     await User.findByIdAndDelete({ _id: id });
     res.status(200).json({
