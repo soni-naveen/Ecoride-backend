@@ -8,7 +8,7 @@ exports.contactUsController = async (req, res) => {
   try {
     const emailRes = await mailSender(
       email,
-      "Your form data send successfully",
+      "Your Form Data Send Successfully",
       contactUsEmail(email, firstname, lastname, message)
     );
     const formdata = await mailSender(
