@@ -18,19 +18,12 @@ exports.completeProfile = async (req, res) => {
     const userDetails = await User.findById(id);
     const profile = await Profile.findById(userDetails.additionalDetails);
 
-    const updatedProfile = await Profile.findByIdAndUpdate(
-      profile,
-      {
-        $set: {
-          firstName: firstName,
-          lastName: lastName,
-          gender: gender,
-          dateOfBirth: dateOfBirth,
-          contactNumber: contactNumber,
-        },
-      },
-      { new: true }
-    ).exec();
+    // Update the profile fields
+    profile.firstName = firstName;
+    profile.lastName = lastName;
+    profile.dateOfBirth = dateOfBirth;
+    profile.gender = gender;
+    profile.contactNumber = contactNumber;
 
     // Save the updated profile
     await profile.save();
@@ -53,7 +46,6 @@ exports.completeProfile = async (req, res) => {
       message: "Profile completed successfully",
       updatedUserDetails,
       updatedImage,
-      updatedProfile,
     });
   } catch (error) {
     console.log(error);
@@ -66,13 +58,8 @@ exports.completeProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const {
-      firstName = "",
-      lastName = "",
-      gender = "",
-      dateOfBirth = "",
-      contactNumber = "",
-    } = req.body;
+    const { firstName, lastName, dateOfBirth, gender, contactNumber } =
+      req.body;
 
     const id = req.user.id;
 
@@ -83,9 +70,45 @@ exports.updateProfile = async (req, res) => {
     // Update the profile fields
     profile.firstName = firstName;
     profile.lastName = lastName;
-    profile.gender = gender;
     profile.dateOfBirth = dateOfBirth;
+    profile.gender = gender;
     profile.contactNumber = contactNumber;
+
+    // Save the updated profile
+    await profile.save();
+
+    // Find the updated user details
+    const updatedUserDetails = await User.findById(id)
+      .populate("additionalDetails")
+      .exec();
+
+    return res.json({
+      success: true,
+      message: "Profile updated successfully",
+      updatedUserDetails,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.myProfileAbout = async (req, res) => {
+  try {
+    const { about, vehicle } = req.body;
+
+    const id = req.user.id;
+
+    // Find the profile by id
+    const userDetails = await User.findById(id);
+    const profile = await Profile.findById(userDetails.additionalDetails);
+
+    // Update the profile fields
+    profile.about = about;
+    profile.vehicle = vehicle;
 
     // Save the updated profile
     await profile.save();

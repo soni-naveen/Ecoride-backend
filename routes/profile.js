@@ -5,6 +5,7 @@ const {
   fullProfile,
   deleteAccount,
   updateProfile,
+  myProfileAbout,
   getAllUserDetails,
   completeProfile,
   // updateDisplayPicture,
@@ -20,6 +21,7 @@ router.get("/fullprofile/:id", fullProfile);
 router.delete("/deleteProfile", auth, deleteAccount);
 router.put("/completeProfile", auth, completeProfile);
 router.put("/updateProfile", auth, updateProfile);
+router.put("/myProfileAbout", auth, myProfileAbout);
 router.get("/getUserDetails", auth, getAllUserDetails);
 
 // Get Enrolled Courses
