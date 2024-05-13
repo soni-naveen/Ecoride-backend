@@ -8,25 +8,23 @@ const {
   myProfileAbout,
   getAllUserDetails,
   completeProfile,
-  // updateDisplayPicture,
-  //   getEnrolledCourses,
-  //   instructorDashboard,
+  updateDisplayPicture,
 } = require("../controllers/Profile");
 
 // ********************************************************************************************************
 //                                      Profile routes
 // ********************************************************************************************************
 
-router.get("/fullprofile/:id", fullProfile);
+router.get("/fullprofile/:profileId", fullProfile);
 router.delete("/deleteProfile", auth, deleteAccount);
 router.put("/completeProfile", auth, completeProfile);
 router.put("/updateProfile", auth, updateProfile);
+router.put("/updateDisplayPicture", auth, updateDisplayPicture);
 router.put("/myProfileAbout", auth, myProfileAbout);
 router.get("/getUserDetails", auth, getAllUserDetails);
 
 // Get Enrolled Courses
 // router.get("/getEnrolledCourses", auth, getEnrolledCourses);
-// router.put("/updateDisplayPicture", auth, updateDisplayPicture);
 // router.get("/instructorDashboard", auth, isInstructor, instructorDashboard);
 
 module.exports = router;

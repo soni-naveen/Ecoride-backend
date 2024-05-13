@@ -6,6 +6,7 @@ const mailSender = require("../utils/mailSender");
 const { passwordUpdated } = require("../mail/templates/passwordUpdate");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 require("dotenv").config();
 
 // SendOTP
@@ -119,6 +120,7 @@ exports.signup = async (req, res) => {
 
       // entry create in database
       const profileDetails = await Profile.create({
+        profileId: crypto.randomBytes(20).toString("hex"),
         email: email,
         firstName: null,
         lastName: null,
