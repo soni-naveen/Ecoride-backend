@@ -25,7 +25,7 @@ exports.resetPasswordToken = async (req, res) => {
     );
     console.log("DETAILS", updatedDetails);
 
-    const url = `https://ecoride-zzx5.onrender.com/update-password/${token}`;
+    const url = `https://ecoridecar.vercel.app/update-password/${token}`;
 
     await mailSender(
       email,
