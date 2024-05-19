@@ -32,7 +32,6 @@ exports.sendotp = async (req, res) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
-    // console.log("OTP generated: ", otp);
 
     //check for unique OTP or not (bad method)
     const result = await OTP.findOne({ otp: otp });
@@ -156,7 +155,7 @@ exports.signup = async (req, res) => {
 
       //create cookie & send response
       const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
         httpOnly: true,
         // A cookie with the HttpOnly attribute is inaccessible to the JavaScript Document.cookie API; it's only sent to the server
       };
@@ -214,7 +213,7 @@ exports.login = async (req, res) => {
 
       //create cookie & send response
       const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
         httpOnly: true,
         // A cookie with the HttpOnly attribute is inaccessible to the JavaScript Document.cookie API; it's only sent to the server
       };

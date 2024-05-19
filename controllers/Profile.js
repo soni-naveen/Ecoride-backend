@@ -132,7 +132,6 @@ exports.fullProfile = async (req, res) => {
   const profileId = req.params.profileId;
   try {
     const profiles = await Profile.findById(profileId);
-    console.log(profiles);
     res.json({
       success: true,
       message: "profiles",
