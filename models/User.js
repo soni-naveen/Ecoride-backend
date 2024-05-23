@@ -23,18 +23,10 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpires: {
     type: Date,
   },
-  rideBooked: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "RideBooked",
-    },
-  ],
-  ridePublished: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "RidePublished",
-    },
-  ],
+  ridePublished: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Ride",
+  },
 });
 
 const User = mongoose.model("User", userSchema);

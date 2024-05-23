@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Ride = require("../models/Ride");
 const OTP = require("../models/OTP");
 const Profile = require("../models/Profile");
 const otpGenerator = require("otp-generator");
@@ -135,10 +136,21 @@ exports.signup = async (req, res) => {
         drivingRating: 0.0,
       });
 
+      const rideDetails = await Ride.create({
+        fromWhere: "",
+        toWhere: "",
+        date: "",
+        time: "",
+        noOfSeats: 0,
+        journeyTime: "",
+        price: 0,
+      });
+
       const user = await User.create({
         email,
         password: hashedPassword,
         additionalDetails: profileDetails._id,
+        ridePublished: rideDetails._id,
         image: `https://api.dicebear.com/5.x/initials/svg?seed=${email}&chars=1`,
       });
 

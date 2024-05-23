@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Profile = require("../models/Profile");
 const User = require("../models/User");
+const Ride = require("../models/Ride");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 
 exports.completeProfile = async (req, res) => {
@@ -158,13 +159,11 @@ exports.deleteAccount = async (req, res) => {
     await Profile.findByIdAndDelete({
       _id: new mongoose.Types.ObjectId(user.additionalDetails),
     });
-    // for (const courseId of user.courses) {
-    //   await Course.findByIdAndUpdate(
-    //     courseId,
-    //     { $pull: { studentsEnroled: id } },
-    //     { new: true }
-    //   );
-    // }
+
+    // Delete Assosiated Ride with the User
+    await Ride.findByIdAndDelete({
+      _id: new mongoose.Types.ObjectId(user.ridePublished),
+    });
 
     // Now Delete User
     await User.findByIdAndDelete({ _id: id });
@@ -172,7 +171,7 @@ exports.deleteAccount = async (req, res) => {
       success: true,
       message: "User deleted successfully",
     });
-    // await CourseProgress.deleteMany({ userId: id });
+
   } catch (error) {
     console.log(error);
     res
@@ -222,6 +221,41 @@ exports.updateDisplayPicture = async (req, res) => {
       success: true,
       message: `Image Updated successfully`,
       data: updatedProfile,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.verifyProfile = async (req, res) => {
+  try {
+    const verifyProfile = req.files.verifyProfile;
+    const userId = req.user.id;
+
+    const image = await uploadImageToCloudinary(
+      verifyProfile,
+      process.env.FOLDER_NAME,
+      1000,
+      1000
+    );
+    const userDetails = await User.findById(userId);
+    const profile = await Profile.findById(userDetails.additionalDetails);
+
+    profile.govtId = "Pending";
+
+    await profile.save();
+
+    const updatedProfile = await User.findById(userId)
+      .populate("additionalDetails")
+      .exec();
+
+    return res.json({
+      success: true,
+      data: updatedProfile,
+      message: `Profile Verification`,
     });
   } catch (error) {
     return res.status(500).json({

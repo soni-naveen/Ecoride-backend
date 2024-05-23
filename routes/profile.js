@@ -9,6 +9,7 @@ const {
   getAllUserDetails,
   completeProfile,
   updateDisplayPicture,
+  verifyProfile,
 } = require("../controllers/Profile");
 
 // ********************************************************************************************************
@@ -20,6 +21,7 @@ router.delete("/deleteProfile", auth, deleteAccount);
 router.put("/completeProfile", auth, completeProfile);
 router.put("/updateProfile", auth, updateProfile);
 router.put("/updateDisplayPicture", auth, updateDisplayPicture);
+router.put("/verifyProfile", auth, verifyProfile);
 router.put("/myProfileAbout", auth, myProfileAbout);
 router.get("/getUserDetails", auth, getAllUserDetails);
 

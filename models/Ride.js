@@ -3,32 +3,34 @@ const mongoose = require("mongoose");
 const RideSchema = new mongoose.Schema({
   fromWhere: {
     type: String,
-    required: true,
   },
   toWhere: {
     type: String,
-    required: true,
   },
   date: {
-    type: Date,
-    required: true,
+    type: String,
   },
   time: {
     type: String,
-    required: true,
   },
   noOfSeats: {
     type: Number,
-    required: true,
   },
   journeyTime: {
     type: String,
-    required: true,
   },
   price: {
     type: Number,
-    required: true,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  stopPoints: [
+    {
+      type: String,
+    },
+  ],
 });
 
 module.exports = mongoose.model("Ride", RideSchema);
