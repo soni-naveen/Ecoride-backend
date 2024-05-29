@@ -36,6 +36,7 @@ exports.completeProfile = async (req, res) => {
     // Find the updated user details
     const updatedUserDetails = await User.findByIdAndUpdate(id)
       .populate("additionalDetails")
+      .populate("ridePublished")
       .exec();
 
     return res.json({
@@ -77,6 +78,7 @@ exports.updateProfile = async (req, res) => {
     // Find the updated user details
     const updatedUserDetails = await User.findById(id)
       .populate("additionalDetails")
+      .populate("ridePublished")
       .exec();
 
     return res.json({
@@ -113,6 +115,7 @@ exports.myProfileAbout = async (req, res) => {
     // Find the updated user details
     const updatedUserDetails = await User.findById(id)
       .populate("additionalDetails")
+      .populate("ridePublished")
       .exec();
 
     return res.json({
@@ -171,7 +174,6 @@ exports.deleteAccount = async (req, res) => {
       success: true,
       message: "User deleted successfully",
     });
-
   } catch (error) {
     console.log(error);
     res
@@ -185,6 +187,7 @@ exports.getAllUserDetails = async (req, res) => {
     const id = req.user.id;
     const userDetails = await User.findById(id)
       .populate("additionalDetails")
+      .populate("ridePublished")
       .exec();
     // console.log(userDetails);
     res.status(200).json({
@@ -215,7 +218,9 @@ exports.updateDisplayPicture = async (req, res) => {
       { _id: userId },
       { image: image.secure_url },
       { new: true }
-    ).populate("additionalDetails");
+    )
+      .populate("additionalDetails")
+      .populate("ridePublished");
 
     res.send({
       success: true,
@@ -250,6 +255,7 @@ exports.verifyProfile = async (req, res) => {
 
     const updatedProfile = await User.findById(userId)
       .populate("additionalDetails")
+      .populate("ridePublished")
       .exec();
 
     return res.json({

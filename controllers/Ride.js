@@ -8,7 +8,7 @@ exports.createRide = async (req, res) => {
     const userId = req.user.id;
 
     //fetch data
-    let { fromWhere, toWhere, date, time, noOfSeats, journeyTime, price } =
+    const { fromWhere, toWhere, date, leavingTime, noOfSeats, reachingTime, price } =
       req.body;
 
     // Find the ride id
@@ -20,9 +20,9 @@ exports.createRide = async (req, res) => {
       !fromWhere ||
       !toWhere ||
       !date ||
-      !time ||
+      !leavingTime ||
       !noOfSeats ||
-      !journeyTime ||
+      !reachingTime ||
       !price
     ) {
       return res.status(400).json({
@@ -34,21 +34,22 @@ exports.createRide = async (req, res) => {
     ride.fromWhere = fromWhere;
     ride.toWhere = toWhere;
     ride.date = date;
-    ride.time = time;
+    ride.leavingTime = leavingTime;
     ride.noOfSeats = noOfSeats;
-    ride.journeyTime = journeyTime;
+    ride.reachingTime = reachingTime;
     ride.price = price;
 
     await ride.save();
 
     const newRide = await User.findById(userId)
+      .populate("additionalDetails")
       .populate("ridePublished")
       .exec();
 
     // Return the new ride and a success message
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      data: newRide,
+      newRide,
       message: "Ride Created Successfully",
     });
   } catch (error) {
@@ -81,14 +82,15 @@ exports.addStopPoint = async (req, res) => {
 
     await ride.save();
 
-    const updatedRide = await User.findById(userId)
+    const rideStopPoint = await User.findById(userId)
+      .populate("additionalDetails")
       .populate("ridePublished")
       .exec();
 
     // Return the add stop point a success message
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      data: updatedRide,
+      rideStopPoint,
       message: "Stop points added Successfully",
     });
   } catch (error) {

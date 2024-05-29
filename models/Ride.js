@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 
 const RideSchema = new mongoose.Schema({
+  email: {
+    type: String,
+  },
   fromWhere: {
     type: String,
   },
@@ -10,14 +13,14 @@ const RideSchema = new mongoose.Schema({
   date: {
     type: String,
   },
-  time: {
+  leavingTime: {
+    type: String,
+  },
+  reachingTime: {
     type: String,
   },
   noOfSeats: {
     type: Number,
-  },
-  journeyTime: {
-    type: String,
   },
   price: {
     type: Number,

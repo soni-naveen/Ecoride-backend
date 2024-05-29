@@ -137,12 +137,13 @@ exports.signup = async (req, res) => {
       });
 
       const rideDetails = await Ride.create({
+        email: email,
         fromWhere: "",
         toWhere: "",
         date: "",
-        time: "",
+        leavingTime: "",
         noOfSeats: 0,
-        journeyTime: "",
+        reachingTime: "",
         price: 0,
         stopPoint1: "",
         stopPoint2: "",
@@ -153,8 +154,8 @@ exports.signup = async (req, res) => {
         email,
         password: hashedPassword,
         additionalDetails: profileDetails._id,
-        ridePublished: rideDetails._id,
         image: `https://api.dicebear.com/5.x/initials/svg?seed=${email}&chars=1`,
+        ridePublished: rideDetails._id,
       });
 
       const payload = {
@@ -205,7 +206,7 @@ exports.login = async (req, res) => {
     }
 
     //check for registered user
-    const user = await User.findOne({ email }).populate("additionalDetails");
+    const user = await User.findOne({ email }).populate("additionalDetails").populate("ridePublished");
     if (!user) {
       return res.status(401).json({
         success: false,
