@@ -144,6 +144,9 @@ exports.signup = async (req, res) => {
         noOfSeats: 0,
         journeyTime: "",
         price: 0,
+        stopPoint1: "",
+        stopPoint2: "",
+        stopPoint3: "",
       });
 
       const user = await User.create({

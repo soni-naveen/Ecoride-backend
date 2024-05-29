@@ -26,11 +26,15 @@ const RideSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  stopPoints: [
-    {
-      type: String,
-    },
-  ],
+  stopPoint1: {
+    type: String,
+  },
+  stopPoint2: {
+    type: String,
+  },
+  stopPoint3: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("Ride", RideSchema);

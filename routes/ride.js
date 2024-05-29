@@ -6,6 +6,6 @@ const { createRide, addStopPoint } = require("../controllers/Ride");
 const { auth } = require("../middlewares/auth");
 
 router.post("/createRide", auth, createRide);
-// router.post("/addStopPoint", auth, addStopPoint);
+router.post("/addStopPoint", auth, addStopPoint);
 
 module.exports = router;

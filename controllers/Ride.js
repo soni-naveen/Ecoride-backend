@@ -41,7 +41,9 @@ exports.createRide = async (req, res) => {
 
     await ride.save();
 
-    const newRide = await User.findById(userId).populate("ridePublished").exec();
+    const newRide = await User.findById(userId)
+      .populate("ridePublished")
+      .exec();
 
     // Return the new ride and a success message
     res.status(200).json({
@@ -60,52 +62,42 @@ exports.createRide = async (req, res) => {
   }
 };
 
-//Add Stop Point handler function
-// exports.addStopPoint = async (req, res) => {
-//   try {
-//     //fetch data
-//     let { stopPoints } = req.body;
+// Add Stop Point handler function
+exports.addStopPoint = async (req, res) => {
+  try {
+    //fetch data
+    let { stopPoint1, stopPoint2, stopPoint3 } = req.body;
 
-//     // Get user ID from request object
-//     const userId = req.user.id;
+    // Get user ID from request object
+    const userId = req.user.id;
 
-//     // Find the ride id;
-//     const rideId = await Ride.findById(userId);
+    // Find the ride id
+    const userDetails = await User.findById(userId);
+    const ride = await Ride.findById(userDetails.ridePublished);
 
-//     //validation
-//     if (!stopPoints) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "All fields are Mandatory!",
-//       });
-//     }
+    ride.stopPoint1 = stopPoint1 || "";
+    ride.stopPoint2 = stopPoint2 || "";
+    ride.stopPoint3 = stopPoint3 || "";
 
-//     // Add stop points to ride
-//     const updatedRide = await Ride.findByIdAndUpdate(
-//       rideId,
-//       { $push: { stopPoints: { $each: stopPoints } } },
-//       { new: true }
-//     );
+    await ride.save();
 
-//     if (!updatedRide) {
-//       return res.status(404).json({ error: "Ride not found" });
-//     }
+    const updatedRide = await User.findById(userId)
+      .populate("ridePublished")
+      .exec();
 
-//     res.json(updatedRide);
-
-//     // Return the new ride and a success message
-//     res.status(200).json({
-//       success: true,
-//       data: updatedRide,
-//       message: "Stop points added Successfully",
-//     });
-//   } catch (error) {
-//     // Handle any errors that occur during add stop point
-//     console.error(error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to add stop points",
-//       error: error.message,
-//     });
-//   }
-// };
+    // Return the add stop point a success message
+    res.status(200).json({
+      success: true,
+      data: updatedRide,
+      message: "Stop points added Successfully",
+    });
+  } catch (error) {
+    // Handle any errors that occur during add stop point
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to add stop points",
+      error: error.message,
+    });
+  }
+};
