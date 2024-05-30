@@ -147,41 +147,6 @@ exports.fullProfile = async (req, res) => {
   }
 };
 
-exports.deleteAccount = async (req, res) => {
-  try {
-    const id = req.user.id;
-    // console.log(id);
-    const user = await User.findById({ _id: id });
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-    // Delete Assosiated Profile with the User
-    await Profile.findByIdAndDelete({
-      _id: new mongoose.Types.ObjectId(user.additionalDetails),
-    });
-
-    // Delete Assosiated Ride with the User
-    await Ride.findByIdAndDelete({
-      _id: new mongoose.Types.ObjectId(user.ridePublished),
-    });
-
-    // Now Delete User
-    await User.findByIdAndDelete({ _id: id });
-    res.status(200).json({
-      success: true,
-      message: "User deleted successfully",
-    });
-  } catch (error) {
-    console.log(error);
-    res
-      .status(500)
-      .json({ success: false, message: "User Cannot be deleted successfully" });
-  }
-};
-
 exports.getAllUserDetails = async (req, res) => {
   try {
     const id = req.user.id;
@@ -268,5 +233,40 @@ exports.verifyProfile = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+exports.deleteAccount = async (req, res) => {
+  try {
+    const id = req.user.id;
+    // console.log(id);
+    const user = await User.findById({ _id: id });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    // Delete Assosiated Profile with the User
+    await Profile.findByIdAndDelete({
+      _id: new mongoose.Types.ObjectId(user.additionalDetails),
+    });
+
+    // Delete Assosiated Ride with the User
+    await Ride.findByIdAndDelete({
+      _id: new mongoose.Types.ObjectId(user.ridePublished),
+    });
+
+    // Now Delete User
+    await User.findByIdAndDelete({ _id: id });
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ success: false, message: "User Cannot be deleted successfully" });
   }
 };

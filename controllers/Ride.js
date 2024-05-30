@@ -8,8 +8,15 @@ exports.createRide = async (req, res) => {
     const userId = req.user.id;
 
     //fetch data
-    const { fromWhere, toWhere, date, leavingTime, noOfSeats, reachingTime, price } =
-      req.body;
+    const {
+      fromWhere,
+      toWhere,
+      date,
+      leavingTime,
+      noOfSeats,
+      reachingTime,
+      price,
+    } = req.body;
 
     // Find the ride id
     const userDetails = await User.findById(userId);
@@ -63,7 +70,7 @@ exports.createRide = async (req, res) => {
   }
 };
 
-// Add Stop Point handler function
+//Add Stop Point handler function
 exports.addStopPoint = async (req, res) => {
   try {
     //fetch data
@@ -99,6 +106,48 @@ exports.addStopPoint = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to add stop points",
+      error: error.message,
+    });
+  }
+};
+
+//Delete Ride handler function
+exports.deleteRide = async (req, res) => {
+  try {
+    const id = req.user.id;
+
+    // Find the ride id
+    const userDetails = await User.findById(id);
+    const ride = await Ride.findById(userDetails.ridePublished);
+
+    // delete ride details
+    ride.fromWhere = "";
+    ride.toWhere = "";
+    ride.date = "";
+    ride.leavingTime = "";
+    ride.noOfSeats = 0;
+    ride.reachingTime = "";
+    ride.price = 0;
+    ride.stopPoint1 = "";
+    ride.stopPoint2 = "";
+    ride.stopPoint3 = "";
+
+    await ride.save();
+
+    const updatedRideDetails = await User.findById(id)
+      .populate("additionalDetails")
+      .populate("ridePublished")
+      .exec();
+
+    return res.json({
+      success: true,
+      message: "Ride deleted successfully",
+      updatedRideDetails,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
       error: error.message,
     });
   }
