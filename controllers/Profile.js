@@ -225,7 +225,7 @@ exports.verifyProfile = async (req, res) => {
 
     return res.json({
       success: true,
-      data: updatedProfile,
+      updatedProfile,
       message: `Profile Verification`,
     });
   } catch (error) {
