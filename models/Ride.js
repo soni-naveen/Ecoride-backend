@@ -25,10 +25,6 @@ const RideSchema = new mongoose.Schema({
   price: {
     type: Number,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
   stopPoint1: {
     type: String,
   },
