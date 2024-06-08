@@ -7,7 +7,6 @@ const mailSender = require("../utils/mailSender");
 const { passwordUpdated } = require("../mail/templates/passwordUpdate");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
 require("dotenv").config();
 
 // SendOTP
@@ -120,7 +119,6 @@ exports.signup = async (req, res) => {
 
       // entry create in database
       const profileDetails = await Profile.create({
-        profileId: crypto.randomBytes(20).toString("hex"),
         email: email,
         firstName: null,
         lastName: null,
@@ -171,7 +169,7 @@ exports.signup = async (req, res) => {
 
       //create cookie & send response
       const options = {
-        expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
         httpOnly: true,
         // A cookie with the HttpOnly attribute is inaccessible to the JavaScript Document.cookie API; it's only sent to the server
       };

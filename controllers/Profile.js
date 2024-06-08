@@ -133,17 +133,31 @@ exports.myProfileAbout = async (req, res) => {
 };
 
 exports.fullProfile = async (req, res) => {
-  const profileId = req.params.profileId;
   try {
-    const profiles = await Profile.findById(profileId);
-    res.json({
+    const { userId } = req.body;
+
+    const userDetails = await User.findOne({
+      _id: userId,
+    })
+      .populate("additionalDetails")
+      .exec();
+
+    if (!userDetails) {
+      return res.status(400).json({
+        success: false,
+        message: `Could not find profile with id: ${userId}`,
+      });
+    }
+
+    return res.status(200).json({
       success: true,
-      message: "profiles",
-      profiles,
+      data: userDetails,
     });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 };
 
