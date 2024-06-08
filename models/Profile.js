@@ -1,9 +1,6 @@
 const mongoose = require("mongoose");
 
 const profileSchema = new mongoose.Schema({
-  profileId: {
-    type: String,
-  },
   email: {
     type: String,
   },

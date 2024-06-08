@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const { auth } = require("../middlewares/auth");
 const {
-  fullProfile,
   deleteAccount,
   updateProfile,
   myProfileAbout,
@@ -10,20 +9,22 @@ const {
   completeProfile,
   updateDisplayPicture,
   verifyProfile,
+  fullProfile,
 } = require("../controllers/Profile");
 
 // ********************************************************************************************************
 //                                      Profile routes
 // ********************************************************************************************************
 
-router.get("/fullprofile/:profileId", fullProfile);
-router.delete("/deleteProfile", auth, deleteAccount);
+router.post("/fullProfile", fullProfile);
+
+router.get("/getUserDetails", auth, getAllUserDetails);
 router.put("/completeProfile", auth, completeProfile);
 router.put("/updateProfile", auth, updateProfile);
 router.put("/updateDisplayPicture", auth, updateDisplayPicture);
 router.put("/verifyProfile", auth, verifyProfile);
 router.put("/myProfileAbout", auth, myProfileAbout);
-router.get("/getUserDetails", auth, getAllUserDetails);
+router.delete("/deleteProfile", auth, deleteAccount);
 
 // Get Enrolled Courses
 // router.get("/getEnrolledCourses", auth, getEnrolledCourses);

@@ -26,7 +26,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    // origin: process.env.CORS_ORIGIN,
+    origin: "*",
     credentials: true,
   })
 );
@@ -58,5 +59,3 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`App is listening at ${PORT}`);
 });
-
-// End of code.
