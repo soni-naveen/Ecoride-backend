@@ -1,3 +1,4 @@
+const Profile = require("../models/Profile");
 const Ride = require("../models/Ride");
 const User = require("../models/User");
 
@@ -132,6 +133,53 @@ exports.deleteRide = async (req, res) => {
     ride.stopPoint2 = "";
     ride.stopPoint3 = "";
 
+    await ride.save();
+
+    const updatedRideDetails = await User.findById(id)
+      .populate("additionalDetails")
+      .populate("ridePublished")
+      .exec();
+
+    return res.json({
+      success: true,
+      message: "Ride deleted successfully",
+      updatedRideDetails,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+//Automatically delete Ride handler function
+exports.autoDeleteRide = async (req, res) => {
+  try {
+    const id = req.user.id;
+
+    // Find the ride id
+    const userDetails = await User.findById(id);
+    const profile = await Profile.findById(userDetails.additionalDetails);
+    const ride = await Ride.findById(userDetails.ridePublished);
+
+    // delete ride details
+    ride.fromWhere = "";
+    ride.toWhere = "";
+    ride.date = "";
+    ride.leavingTime = "";
+    ride.noOfSeats = 0;
+    ride.reachingTime = "";
+    ride.price = 0;
+    ride.stopPoint1 = "";
+    ride.stopPoint2 = "";
+    ride.stopPoint3 = "";
+
+    //update the ride count
+    profile.noOfRidesPublished = profile.noOfRidesPublished + 1;
+
+    await profile.save();
     await ride.save();
 
     const updatedRideDetails = await User.findById(id)

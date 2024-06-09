@@ -2,11 +2,17 @@
 const express = require("express");
 const router = express.Router();
 
-const { createRide, addStopPoint, deleteRide } = require("../controllers/Ride");
+const {
+  createRide,
+  addStopPoint,
+  deleteRide,
+  autoDeleteRide,
+} = require("../controllers/Ride");
 const { auth } = require("../middlewares/auth");
 
 router.post("/createRide", auth, createRide);
 router.put("/addStopPoint", auth, addStopPoint);
 router.put("/deleteRide", auth, deleteRide);
+router.put("/autoDeleteRide", auth, autoDeleteRide);
 
 module.exports = router;
