@@ -3,6 +3,11 @@ const Profile = require("../models/Profile");
 const User = require("../models/User");
 const Ride = require("../models/Ride");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
+const {
+  deletedAccountInfoMail,
+} = require("../mail/templates/deletedAccountInfoMail");
+const { accountDeletedMail } = require("../mail/templates/accountDeletedMail");
+const mailSender = require("../utils/mailSender");
 
 exports.completeProfile = async (req, res) => {
   try {
@@ -255,6 +260,7 @@ exports.deleteAccount = async (req, res) => {
     const id = req.user.id;
     // console.log(id);
     const user = await User.findById({ _id: id });
+    const email = user.email;
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -273,6 +279,18 @@ exports.deleteAccount = async (req, res) => {
 
     // Now Delete User
     await User.findByIdAndDelete({ _id: id });
+
+    const userMailSent = await mailSender(
+      email,
+      "Account Deleted Confirmation",
+      accountDeletedMail(email)
+    );
+    const ecorideMailSent = await mailSender(
+      "ecoride.in@gmail.com",
+      "User Deleted Account",
+      deletedAccountInfoMail(email)
+    );
+
     res.status(200).json({
       success: true,
       message: "User deleted successfully",
