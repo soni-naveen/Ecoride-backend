@@ -68,10 +68,10 @@ exports.sendotp = async (req, res) => {
 // Signup
 exports.signup = async (req, res) => {
   try {
-    //data fetch from request body
+    //Data fetch from request body
     const { email, password, confirmPassword, otp } = req.body;
 
-    //validation
+    //Validation
     if (!email || !password || !confirmPassword || !otp) {
       return res.status(403).json({
         success: false,
@@ -79,16 +79,16 @@ exports.signup = async (req, res) => {
       });
     }
 
-    //confirm password
+    //Confirm password
     if (password !== confirmPassword) {
       return res.status(400).json({
         success: false,
         message:
-          "Password and ConfirmPassword value does not match, please try again!",
+          "Password and Confirm password value does not match, please try again!",
       });
     }
 
-    // Check if user already exist
+    //Check if user already exist
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -97,7 +97,7 @@ exports.signup = async (req, res) => {
       });
     }
 
-    //find most recent OTP stored for the user
+    //Find most recent OTP stored for the user
     const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
 
     //validate OTP
@@ -117,9 +117,10 @@ exports.signup = async (req, res) => {
       //Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // entry create in database
+      //Entry create in database
       const profileDetails = await Profile.create({
         email: email,
+        image: `https://api.dicebear.com/5.x/initials/svg?seed=${email}&chars=1`,
         firstName: null,
         lastName: null,
         gender: null,
@@ -130,12 +131,12 @@ exports.signup = async (req, res) => {
         vehicle: "",
         dateJoined: Date.now(),
         noOfRidesPublished: 0,
-        overallRating: 0.0,
-        drivingRating: 0.0,
+        overallRating: 0,
+        drivingRating: 0,
       });
 
       const rideDetails = await Ride.create({
-        email: email,
+        profile: profileDetails._id,
         fromWhere: "",
         toWhere: "",
         date: "",
@@ -152,7 +153,6 @@ exports.signup = async (req, res) => {
         email,
         password: hashedPassword,
         additionalDetails: profileDetails._id,
-        image: `https://api.dicebear.com/5.x/initials/svg?seed=${email}&chars=1`,
         ridePublished: rideDetails._id,
       });
 
@@ -204,7 +204,10 @@ exports.login = async (req, res) => {
     }
 
     //check for registered user
-    const user = await User.findOne({ email }).populate("additionalDetails").populate("ridePublished");
+    const user = await User.findOne({ email })
+      .populate("additionalDetails")
+      .populate("ridePublished");
+
     if (!user) {
       return res.status(401).json({
         success: false,

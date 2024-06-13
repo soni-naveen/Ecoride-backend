@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 
 const RideSchema = new mongoose.Schema({
-  email: {
-    type: String,
+  profile: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Profile",
   },
   fromWhere: {
     type: String,

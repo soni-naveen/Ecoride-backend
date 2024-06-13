@@ -17,7 +17,6 @@ const {
 // ********************************************************************************************************
 
 router.post("/fullProfile", fullProfile);
-
 router.get("/getUserDetails", auth, getAllUserDetails);
 router.put("/completeProfile", auth, completeProfile);
 router.put("/updateProfile", auth, updateProfile);

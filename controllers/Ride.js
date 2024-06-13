@@ -200,3 +200,43 @@ exports.autoDeleteRide = async (req, res) => {
     });
   }
 };
+
+//Searched rides handler function
+exports.getSearchedRides = async (req, res) => {
+  try {
+    const { st, dt, date, seats } = req.body;
+
+    // Validate inputs
+    if (!st || !dt || !date || !seats) {
+      return res.status(400).json({
+        success: false,
+        error: "Require all fields!",
+      });
+    }
+
+    // Find rides that match the search criteria
+    const searchedRides = await Ride.find({
+      $or: [
+        { fromWhere: st },
+        { toWhere: dt },
+        { stopPoint1: st },
+        { stopPoint2: st },
+        { stopPoint3: st },
+      ],
+      date: date,
+      noOfSeats: { $gte: seats },
+    })
+      .populate("profile")
+      .exec();
+
+    return res.status(200).json({
+      success: true,
+      data: searchedRides,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};

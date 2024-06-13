@@ -30,8 +30,8 @@ exports.completeProfile = async (req, res) => {
     // Save the updated profile
     await profile.save();
 
-    const updatedImage = await User.findByIdAndUpdate(
-      userDetails,
+    const updatedImage = await Profile.findByIdAndUpdate(
+      profile,
       {
         image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}&chars=1`,
       },
@@ -71,6 +71,7 @@ exports.updateProfile = async (req, res) => {
     const profile = await Profile.findById(userDetails.additionalDetails);
 
     // Update the profile fields
+    profile.image = `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}&chars=1`;
     profile.firstName = firstName;
     profile.lastName = lastName;
     profile.dateOfBirth = dateOfBirth;
@@ -139,24 +140,20 @@ exports.myProfileAbout = async (req, res) => {
 
 exports.fullProfile = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { profileId } = req.body;
 
-    const userDetails = await User.findOne({
-      _id: userId,
-    })
-      .populate("additionalDetails")
-      .exec();
+    const profileDetails = await Profile.findById(profileId);
 
-    if (!userDetails) {
+    if (!profileDetails) {
       return res.status(400).json({
         success: false,
-        message: `Could not find profile with id: ${userId}`,
+        message: `Could not find profile with id: ${profileId}`,
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: userDetails,
+      data: profileDetails,
     });
   } catch (error) {
     return res.status(500).json({
@@ -169,11 +166,12 @@ exports.fullProfile = async (req, res) => {
 exports.getAllUserDetails = async (req, res) => {
   try {
     const id = req.user.id;
+
     const userDetails = await User.findById(id)
       .populate("additionalDetails")
       .populate("ridePublished")
       .exec();
-    // console.log(userDetails);
+
     res.status(200).json({
       success: true,
       message: "User Data fetched successfully",
@@ -190,26 +188,29 @@ exports.getAllUserDetails = async (req, res) => {
 exports.updateDisplayPicture = async (req, res) => {
   try {
     const displayPicture = req.files.displayPicture;
-    const userId = req.user.id;
+    const id = req.user.id;
+
+    const userId = await User.findById(id);
+    const profile = await Profile.findById(userId.additionalDetails);
+
     const image = await uploadImageToCloudinary(
       displayPicture,
       process.env.FOLDER_NAME,
       1000,
       1000
     );
-    // console.log(image);
-    const updatedProfile = await User.findByIdAndUpdate(
-      { _id: userId },
-      { image: image.secure_url },
-      { new: true }
-    )
-      .populate("additionalDetails")
-      .populate("ridePublished");
 
-    res.send({
+    profile.image = image.secure_url;
+    await profile.save();
+
+    const userDetails = await User.findById(userId)
+      .populate("additionalDetails")
+      .exec();
+
+    res.status(200).json({
       success: true,
       message: `Image Updated successfully`,
-      data: updatedProfile,
+      data: userDetails,
     });
   } catch (error) {
     return res.status(500).json({

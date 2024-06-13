@@ -30,7 +30,7 @@ exports.resetPasswordToken = async (req, res) => {
     await mailSender(
       email,
       "Password Reset",
-      `Your Link to Reset Password is <br> ${url}. <br> Please click this url to reset your password.`
+      `Your Link to Reset Password is <br> ${url} <br> Please click this url to reset your password.`
     );
 
     res.json({

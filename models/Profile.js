@@ -4,6 +4,9 @@ const profileSchema = new mongoose.Schema({
   email: {
     type: String,
   },
+  image: {
+    type: String,
+  },
   firstName: {
     type: String,
     trim: true,
