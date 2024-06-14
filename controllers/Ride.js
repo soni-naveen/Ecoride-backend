@@ -217,11 +217,34 @@ exports.getSearchedRides = async (req, res) => {
     // Find rides that match the search criteria
     const searchedRides = await Ride.find({
       $or: [
-        { fromWhere: st },
-        { toWhere: dt },
-        { stopPoint1: st },
-        { stopPoint2: st },
-        { stopPoint3: st },
+        {
+          $and: [
+            { fromWhere: st },
+            {
+              $or: [
+                { stopPoint1: dt },
+                { stopPoint1: dt },
+                { stopPoint3: dt },
+                { toWhere: dt },
+              ],
+            },
+          ],
+        },
+        {
+          $and: [
+            { stopPoint1: st },
+            { $or: [{ stopPoint2: dt }, { stopPoint3: dt }, { toWhere: dt }] },
+          ],
+        },
+        {
+          $and: [
+            { stopPoint2: st },
+            { $or: [{ stopPoint3: dt }, { toWhere: dt }] },
+          ],
+        },
+        {
+          $and: [{ stopPoint3: st }, { toWhere: dt }],
+        },
       ],
       date: date,
       noOfSeats: { $gte: seats },
@@ -232,6 +255,32 @@ exports.getSearchedRides = async (req, res) => {
     return res.status(200).json({
       success: true,
       data: searchedRides,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+//Get ride details handler function
+exports.getRideDetails = async (req, res) => {
+  try {
+    const { rideId } = req.body;
+
+    const rideDetails = await Ride.findById(rideId).populate("profile").exec();
+
+    if (!rideDetails) {
+      return res.status(400).json({
+        success: false,
+        message: `Could not find profile with id: ${rideId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: rideDetails,
     });
   } catch (error) {
     return res.status(500).json({
