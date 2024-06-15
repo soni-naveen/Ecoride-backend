@@ -71,7 +71,6 @@ exports.updateProfile = async (req, res) => {
     const profile = await Profile.findById(userDetails.additionalDetails);
 
     // Update the profile fields
-    profile.image = `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}&chars=1`;
     profile.firstName = firstName;
     profile.lastName = lastName;
     profile.dateOfBirth = dateOfBirth;

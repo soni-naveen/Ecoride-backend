@@ -16,12 +16,14 @@
     "cloudinary": "^2.2.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-fileupload": "^1.5.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.3.2",
     "nanoid": "^5.0.7",
+    "node-cron": "^3.0.3",
     "nodemailer": "^6.9.12",
     "otp-generator": "^4.0.1"
   }
