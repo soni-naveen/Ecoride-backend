@@ -14,13 +14,16 @@ exports.createRide = async (req, res) => {
 
     //fetch data
     const {
-      fromWhere,
-      toWhere,
-      date,
-      leavingTime,
-      noOfSeats,
-      reachingTime,
-      price,
+      ["publishRideData[fromWhere]"]: fromWhere,
+      ["publishRideData[toWhere]"]: toWhere,
+      ["publishRideData[date]"]: date,
+      ["publishRideData[leavingTime]"]: leavingTime,
+      ["publishRideData[noOfSeats]"]: noOfSeats,
+      ["publishRideData[reachingTime]"]: reachingTime,
+      ["publishRideData[price]"]: price,
+      ["stopPointData[stopPoint1]"]: stopPoint1,
+      ["stopPointData[stopPoint2]"]: stopPoint2,
+      ["stopPointData[stopPoint3]"]: stopPoint3,
     } = req.body;
 
     // Find the ride id
@@ -50,6 +53,9 @@ exports.createRide = async (req, res) => {
     ride.noOfSeats = noOfSeats;
     ride.reachingTime = reachingTime;
     ride.price = price;
+    ride.stopPoint1 = stopPoint1 || "";
+    ride.stopPoint2 = stopPoint2 || "";
+    ride.stopPoint3 = stopPoint3 || "";
 
     await ride.save();
 
@@ -61,7 +67,7 @@ exports.createRide = async (req, res) => {
     // Return the new ride and a success message
     return res.status(200).json({
       success: true,
-      newRide,
+      data: newRide,
       message: "Ride Created Successfully",
     });
   } catch (error) {
@@ -108,47 +114,6 @@ cron.schedule(`* * * * *`, async () => {
     console.error("Error in scheduled task:", error);
   }
 });
-
-//Add Stop Point handler function
-exports.addStopPoint = async (req, res) => {
-  try {
-    //fetch data
-    let { stopPoint1, stopPoint2, stopPoint3 } = req.body;
-
-    // Get user ID from request object
-    const userId = req.user.id;
-
-    // Find the ride id
-    const userDetails = await User.findById(userId);
-    const ride = await Ride.findById(userDetails.ridePublished);
-
-    ride.stopPoint1 = stopPoint1 || "";
-    ride.stopPoint2 = stopPoint2 || "";
-    ride.stopPoint3 = stopPoint3 || "";
-
-    await ride.save();
-
-    const rideStopPoint = await User.findById(userId)
-      .populate("additionalDetails")
-      .populate("ridePublished")
-      .exec();
-
-    // Return the add stop point a success message
-    return res.status(200).json({
-      success: true,
-      rideStopPoint,
-      message: "Stop points added Successfully",
-    });
-  } catch (error) {
-    // Handle any errors that occur during add stop point
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to add stop points",
-      error: error.message,
-    });
-  }
-};
 
 //Delete Ride handler function
 exports.deleteRide = async (req, res) => {
