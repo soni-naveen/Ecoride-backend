@@ -7,6 +7,7 @@ const {
   deleteRide,
   getSearchedRides,
   getRideDetails,
+  autoDeleteRide
 } = require("../controllers/Ride");
 const { auth } = require("../middlewares/auth");
 
@@ -14,5 +15,6 @@ router.post("/getSearchedRides", getSearchedRides);
 router.post("/getRideDetails", getRideDetails);
 router.post("/createRide", auth, createRide);
 router.put("/deleteRide", auth, deleteRide);
+router.post("/autoDeleteRide", autoDeleteRide);
 
 module.exports = router;

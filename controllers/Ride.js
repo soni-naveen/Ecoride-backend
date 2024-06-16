@@ -157,6 +157,43 @@ exports.deleteRide = async (req, res) => {
   }
 };
 
+//Auto delete ride handler function
+exports.autoDeleteRide = async (req, res) => {
+  try {
+    const users = await User.find()
+      .populate("ridePublished")
+      .populate("additionalDetails")
+      .exec();
+
+    for (const user of users) {
+      const ride = user.ridePublished;
+      const profile = user.additionalDetails;
+
+      if (dayjs(`${ride.date} ${ride.reachingTime}`).isSameOrBefore(dayjs())) {
+        ride.fromWhere = "";
+        ride.toWhere = "";
+        ride.date = "";
+        ride.leavingTime = "";
+        ride.noOfSeats = 0;
+        ride.reachingTime = "";
+        ride.price = 0;
+        ride.stopPoint1 = "";
+        ride.stopPoint2 = "";
+        ride.stopPoint3 = "";
+
+        // Update the ride count
+        profile.noOfRidesPublished = profile.noOfRidesPublished + 1;
+        await profile.save();
+        await ride.save();
+      }
+    }
+    res.status(200).send("Rides checked and updated.");
+  } catch (error) {
+    console.error("Error in scheduled task:", error);
+    res.status(500).send("Error in scheduled task.");
+  }
+};
+
 //Searched rides handler function
 exports.getSearchedRides = async (req, res) => {
   try {
