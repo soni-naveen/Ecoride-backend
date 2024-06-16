@@ -1,10 +1,7 @@
 const Profile = require("../models/Profile");
 const Ride = require("../models/Ride");
 const User = require("../models/User");
-const cron = require("node-cron");
 const dayjs = require("dayjs");
-const isSameOrBefore = require("dayjs/plugin/isSameOrBefore");
-dayjs.extend(isSameOrBefore);
 
 //Create Ride handler function
 exports.createRide = async (req, res) => {
@@ -81,40 +78,6 @@ exports.createRide = async (req, res) => {
   }
 };
 
-//cron job for automatically delete ride
-cron.schedule(`* * * * *`, async () => {
-  try {
-    const users = await User.find()
-      .populate("ridePublished")
-      .populate("additionalDetails")
-      .exec();
-    for (const user of users) {
-      const ride = user.ridePublished;
-      const profile = user.additionalDetails;
-      if (dayjs(`${ride.date} ${ride.reachingTime}`).isSameOrBefore(dayjs())) {
-        ride.fromWhere = "";
-        ride.toWhere = "";
-        ride.date = "";
-        ride.leavingTime = "";
-        ride.noOfSeats = 0;
-        ride.reachingTime = "";
-        ride.price = 0;
-        ride.stopPoint1 = "";
-        ride.stopPoint2 = "";
-        ride.stopPoint3 = "";
-
-        // Update the ride count
-        profile.noOfRidesPublished = profile.noOfRidesPublished + 1;
-        await profile.save();
-        await ride.save();
-      }
-    }
-    // console.log("Checked and deleted rides automatically.");
-  } catch (error) {
-    console.error("Error in scheduled task:", error);
-  }
-});
-
 //Delete Ride handler function
 exports.deleteRide = async (req, res) => {
   try {
@@ -166,10 +129,10 @@ exports.autoDeleteRide = async (req, res) => {
       .exec();
 
     for (const user of users) {
-      const ride = user.ridePublished;
-      const profile = user.additionalDetails;
+      const ride = user?.ridePublished;
+      const profile = user?.additionalDetails;
 
-      if (dayjs(`${ride.date} ${ride.reachingTime}`).isSameOrBefore(dayjs())) {
+      if (dayjs(`${ride.date} ${ride.reachingTime}`) <= (dayjs())) {
         ride.fromWhere = "";
         ride.toWhere = "";
         ride.date = "";
