@@ -179,36 +179,46 @@ exports.getSearchedRides = async (req, res) => {
       });
     }
 
+    // Create regex patterns for similar searches
+    const stPattern = new RegExp(st, "i"); // 'i' for case-insensitive
+    const dtPattern = new RegExp(dt, "i");
+
     // Find rides that match the search criteria
     const searchedRides = await Ride.find({
       $or: [
         {
           $and: [
-            { fromWhere: st },
+            { fromWhere: stPattern },
             {
               $or: [
-                { stopPoint1: dt },
-                { stopPoint1: dt },
-                { stopPoint3: dt },
-                { toWhere: dt },
+                { stopPoint1: dtPattern },
+                { stopPoint2: dtPattern },
+                { stopPoint3: dtPattern },
+                { toWhere: dtPattern },
               ],
             },
           ],
         },
         {
           $and: [
-            { stopPoint1: st },
-            { $or: [{ stopPoint2: dt }, { stopPoint3: dt }, { toWhere: dt }] },
+            { stopPoint1: stPattern },
+            {
+              $or: [
+                { stopPoint2: dtPattern },
+                { stopPoint3: dtPattern },
+                { toWhere: dtPattern },
+              ],
+            },
           ],
         },
         {
           $and: [
-            { stopPoint2: st },
-            { $or: [{ stopPoint3: dt }, { toWhere: dt }] },
+            { stopPoint2: stPattern },
+            { $or: [{ stopPoint3: dtPattern }, { toWhere: dtPattern }] },
           ],
         },
         {
-          $and: [{ stopPoint3: st }, { toWhere: dt }],
+          $and: [{ stopPoint3: stPattern }, { toWhere: dtPattern }],
         },
       ],
       date: date,
