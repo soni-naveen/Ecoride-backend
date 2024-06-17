@@ -2,6 +2,7 @@ const Profile = require("../models/Profile");
 const Ride = require("../models/Ride");
 const User = require("../models/User");
 const dayjs = require("dayjs");
+const cron = require("node-cron");
 
 //Create Ride handler function
 exports.createRide = async (req, res) => {
@@ -121,18 +122,16 @@ exports.deleteRide = async (req, res) => {
 };
 
 //Auto delete ride handler function
-exports.autoDeleteRide = async (req, res) => {
+cron.schedule(`* * * * *`, async () => {
   try {
     const users = await User.find()
       .populate("ridePublished")
       .populate("additionalDetails")
       .exec();
-
     for (const user of users) {
-      const ride = user?.ridePublished;
-      const profile = user?.additionalDetails;
-
-      if (dayjs(`${ride.date} ${ride.reachingTime}`) <= (dayjs())) {
+      const ride = user.ridePublished;
+      const profile = user.additionalDetails;
+      if (dayjs(`${ride.date} ${ride.reachingTime}`) <= dayjs()) {
         ride.fromWhere = "";
         ride.toWhere = "";
         ride.date = "";
@@ -150,12 +149,11 @@ exports.autoDeleteRide = async (req, res) => {
         await ride.save();
       }
     }
-    res.status(200).send("Rides checked and updated.");
+    console.log("Checked and deleted rides automatically.");
   } catch (error) {
     console.error("Error in scheduled task:", error);
-    res.status(500).send("Error in scheduled task.");
   }
-};
+});
 
 //Searched rides handler function
 exports.getSearchedRides = async (req, res) => {

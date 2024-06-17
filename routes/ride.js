@@ -15,6 +15,5 @@ router.post("/getSearchedRides", getSearchedRides);
 router.post("/getRideDetails", getRideDetails);
 router.post("/createRide", auth, createRide);
 router.put("/deleteRide", auth, deleteRide);
-router.post("/autoDeleteRide", autoDeleteRide);
 
 module.exports = router;
