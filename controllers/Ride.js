@@ -1,8 +1,6 @@
 const Profile = require("../models/Profile");
 const Ride = require("../models/Ride");
 const User = require("../models/User");
-const dayjs = require("dayjs");
-const cron = require("node-cron");
 
 //Create Ride handler function
 exports.createRide = async (req, res) => {
@@ -121,39 +119,52 @@ exports.deleteRide = async (req, res) => {
   }
 };
 
-//Auto delete ride handler function
-cron.schedule(`* * * * *`, async () => {
+//Automatically delete Ride handler function
+exports.autoDeleteRide = async (req, res) => {
   try {
-    const users = await User.find()
-      .populate("ridePublished")
-      .populate("additionalDetails")
-      .exec();
-    for (const user of users) {
-      const ride = user.ridePublished;
-      const profile = user.additionalDetails;
-      if (dayjs(`${ride.date} ${ride.reachingTime}`) <= dayjs()) {
-        ride.fromWhere = "";
-        ride.toWhere = "";
-        ride.date = "";
-        ride.leavingTime = "";
-        ride.noOfSeats = 0;
-        ride.reachingTime = "";
-        ride.price = 0;
-        ride.stopPoint1 = "";
-        ride.stopPoint2 = "";
-        ride.stopPoint3 = "";
+    const id = req.user.id;
 
-        // Update the ride count
-        profile.noOfRidesPublished = profile.noOfRidesPublished + 1;
-        await profile.save();
-        await ride.save();
-      }
-    }
-    console.log("Checked and deleted rides automatically.");
+    // Find the ride id
+    const userDetails = await User.findById(id);
+    const profile = await Profile.findById(userDetails.additionalDetails);
+    const ride = await Ride.findById(userDetails.ridePublished);
+
+    // delete ride details
+    ride.fromWhere = "";
+    ride.toWhere = "";
+    ride.date = "";
+    ride.leavingTime = "";
+    ride.noOfSeats = 0;
+    ride.reachingTime = "";
+    ride.price = 0;
+    ride.stopPoint1 = "";
+    ride.stopPoint2 = "";
+    ride.stopPoint3 = "";
+
+    //update the ride count
+    profile.noOfRidesPublished = profile.noOfRidesPublished + 1;
+
+    await profile.save();
+    await ride.save();
+
+    const updatedRideDetails = await User.findById(id)
+      .populate("additionalDetails")
+      .populate("ridePublished")
+      .exec();
+
+    return res.json({
+      success: true,
+      message: "Ride deleted successfully",
+      updatedRideDetails,
+    });
   } catch (error) {
-    console.error("Error in scheduled task:", error);
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
-});
+};
 
 //Searched rides handler function
 exports.getSearchedRides = async (req, res) => {
