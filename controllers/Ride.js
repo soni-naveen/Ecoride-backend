@@ -179,9 +179,13 @@ exports.getSearchedRides = async (req, res) => {
       });
     }
 
+    // Split by comma, hyphen, or parentheses and trim any surrounding spaces
+    const stFirstWord = st.split(/[, ]/)[0].trim();
+    const dtFirstWord = dt.split(/[, ]/)[0].trim();
+
     // Create regex patterns for similar searches
-    const stPattern = new RegExp(st, "i"); // 'i' for case-insensitive
-    const dtPattern = new RegExp(dt, "i");
+    const stPattern = new RegExp(stFirstWord, "i"); // 'i' for case-insensitive,
+    const dtPattern = new RegExp(dtFirstWord, "i");
 
     // Find rides that match the search criteria
     const searchedRides = await Ride.find({
