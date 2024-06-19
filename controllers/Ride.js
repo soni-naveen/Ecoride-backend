@@ -1,6 +1,7 @@
+const User = require("../models/User");
 const Profile = require("../models/Profile");
 const Ride = require("../models/Ride");
-const User = require("../models/User");
+const BookedRide = require("../models/BookedRide");
 
 //Create Ride handler function
 exports.createRide = async (req, res) => {
@@ -67,9 +68,8 @@ exports.createRide = async (req, res) => {
       message: "Ride Created Successfully",
     });
   } catch (error) {
-    // Handle any errors that occur during the creation of the ride
     console.error(error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to create ride",
       error: error.message,
@@ -265,6 +265,58 @@ exports.getRideDetails = async (req, res) => {
     return res.status(500).json({
       success: false,
       error: error.message,
+    });
+  }
+};
+
+//Send book request handler function
+exports.sendBookRequest = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const { rideId } = req.body;
+    const user = await User.findById(id);
+
+    // Check if the ride exists
+    const ride = await Ride.findById(rideId);
+
+    if (!ride) {
+      return res.status(404).json({
+        success: false,
+        message: "Ride not found",
+      });
+    }
+
+    // Add the user to the pendingPassengers array of the ride
+    const rideDetails = await Ride.findByIdAndUpdate(
+      rideId,
+      { $push: { pendingPassengers: user.additionalDetails } },
+      { new: true }
+    ).populate("pendingPassengers");
+
+    const bookedRide = await BookedRide.findOneAndUpdate(
+      { _id: user.rideBooked },
+      {
+        $set: {
+          ride: rideId,
+          profile: ride.profile,
+          rideStatus: "Requested",
+        },
+      },
+      { new: true }
+    )
+      .populate("ride")
+      .populate("profile");
+
+    return res.status(200).json({
+      bookedRide,
+      rideDetails,
+      success: true,
+      message: "Book request sent successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };

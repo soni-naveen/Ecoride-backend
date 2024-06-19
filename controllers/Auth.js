@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Ride = require("../models/Ride");
 const OTP = require("../models/OTP");
 const Profile = require("../models/Profile");
+const BookedRide = require("../models/BookedRide");
 const otpGenerator = require("otp-generator");
 const mailSender = require("../utils/mailSender");
 const { passwordUpdated } = require("../mail/templates/passwordUpdate");
@@ -147,6 +148,15 @@ exports.signup = async (req, res) => {
         stopPoint1: "",
         stopPoint2: "",
         stopPoint3: "",
+        confirmedPassengers: [],
+        pendingPassengers: [],
+      });
+
+      const bookedRideDetails = await BookedRide.create({
+        profile: null,
+        ride: null,
+        rideStatus: "",
+        travellers: [],
       });
 
       const user = await User.create({
@@ -154,6 +164,7 @@ exports.signup = async (req, res) => {
         password: hashedPassword,
         additionalDetails: profileDetails._id,
         ridePublished: rideDetails._id,
+        rideBooked: bookedRideDetails._id,
       });
 
       const payload = {
@@ -328,10 +339,6 @@ exports.changePassword = async (req, res) => {
 
 // In MongoDB, populate is a function that replaces a specified path in a document from one collection with the document from another collection.
 
-// The populate() method is called on the query, which is used to automatically load the data of the sender and chat field into the messages results. The first argument to populate is the name of the the field that we want to load, and the second argument is the fields of the related collection that we want to select.
-
-// populate("sender", "name pic email") will load the data of sender field with the name, pic, and email fields of the related User collection.
-
-// populate("chat") will load the data of the chat field with all the fields of the related chat collection.
+//The populate() method in Mongoose allows you to retrieve referenced documents and populate fields with their corresponding data
 
 // httpOnly : a boolean indicating whether the cookie is only to be sent over HTTP(S), and not made available to client JavaScript

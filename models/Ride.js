@@ -35,6 +35,18 @@ const RideSchema = new mongoose.Schema({
   stopPoint3: {
     type: String,
   },
+  confirmedPassengers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Profile",
+    },
+  ],
+  pendingPassengers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Profile",
+    },
+  ],
 });
 
 module.exports = mongoose.model("Ride", RideSchema);

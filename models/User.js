@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Ride",
   },
+  rideBooked: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "BookedRide",
+  },
 });
 
 const User = mongoose.model("User", userSchema);
