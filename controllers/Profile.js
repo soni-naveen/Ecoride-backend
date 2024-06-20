@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Profile = require("../models/Profile");
 const User = require("../models/User");
 const Ride = require("../models/Ride");
+const BookedRide = require("../models/BookedRide");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const {
   deletedAccountInfoMail,
@@ -169,6 +170,7 @@ exports.getAllUserDetails = async (req, res) => {
     const userDetails = await User.findById(id)
       .populate("additionalDetails")
       .populate("ridePublished")
+      .populate("rideBooked")
       .exec();
 
     res.status(200).json({
@@ -275,6 +277,11 @@ exports.deleteAccount = async (req, res) => {
     // Delete Assosiated Ride with the User
     await Ride.findByIdAndDelete({
       _id: new mongoose.Types.ObjectId(user.ridePublished),
+    });
+
+    // Delete Assosiated BookedRide with the User
+    await BookedRide.findByIdAndDelete({
+      _id: new mongoose.Types.ObjectId(user.rideBooked),
     });
 
     // Now Delete User
