@@ -1,28 +1,29 @@
 const mongoose = require("mongoose");
 const mailSender = require("../utils/mailSender");
 const emailTemplate = require("../mail/templates/emailVerificationTemplate");
-const OTPSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
+const OTPSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+    },
+    otp: {
+      type: String,
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+      expires: 60 * 5, // Document will be deleted 5 minutes after creation
+    },
   },
-  otp: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    expires: 60 * 5, // Document will be deleted 5 minutes after creation
-  },
-});
+  { versionKey: false }
+);
 
 // Define a function to send emails
 async function sendVerificationEmail(email, otp) {
   // Create a transporter to send emails
-
   // Define the email options
-
   // Send the email
   try {
     const mailResponse = await mailSender(
@@ -31,7 +32,10 @@ async function sendVerificationEmail(email, otp) {
       emailTemplate(otp)
     );
     if (mailResponse) {
-      console.log("Email sent successfully: ", mailResponse.response);
+      console.log(
+        "Email sent successfully"
+        // mailResponse.response
+      );
     } else {
       console.log("Error: Mail response is undefined");
     }
@@ -43,7 +47,7 @@ async function sendVerificationEmail(email, otp) {
 
 // Define a post-save hook to send email after the document has been saved
 OTPSchema.pre("save", async function (next) {
-  console.log("New document saved to database");
+  // console.log("New document saved to database");
 
   // Only send an email when a new document is created
   if (this.isNew) {

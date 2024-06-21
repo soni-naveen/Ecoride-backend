@@ -217,7 +217,8 @@ exports.login = async (req, res) => {
     //check for registered user
     const user = await User.findOne({ email })
       .populate("additionalDetails")
-      .populate("ridePublished");
+      .populate("ridePublished")
+      .populate("rideBooked");
 
     if (!user) {
       return res.status(401).json({

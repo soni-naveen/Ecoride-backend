@@ -1,34 +1,37 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    trim: true,
+const userSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    additionalDetails: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Profile",
+    },
+    token: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
+    ridePublished: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Ride",
+    },
+    rideBooked: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "BookedRide",
+    },
   },
-  password: {
-    type: String,
-    required: true,
-  },
-  additionalDetails: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Profile",
-  },
-  token: {
-    type: String,
-  },
-  resetPasswordExpires: {
-    type: Date,
-  },
-  ridePublished: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Ride",
-  },
-  rideBooked: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "BookedRide",
-  },
-});
+  { versionKey: false }
+);
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;

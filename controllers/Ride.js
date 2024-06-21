@@ -65,7 +65,7 @@ exports.createRide = async (req, res) => {
     // Return the new ride and a success message
     return res.status(200).json({
       success: true,
-      newRide,
+      data: newRide,
       message: "Ride Created Successfully",
     });
   } catch (error) {
@@ -98,12 +98,15 @@ exports.deleteRide = async (req, res) => {
     ride.stopPoint1 = "";
     ride.stopPoint2 = "";
     ride.stopPoint3 = "";
+    ride.pendingPassengers = [];
+    ride.confirmedPassengers = [];
 
     await ride.save();
 
-    const updatedRideDetails = await User.findById(id)
+    const updatedRideDetails = await User.findByIdAndUpdate(id)
       .populate("additionalDetails")
       .populate("ridePublished")
+      .populate("rideBooked")
       .exec();
 
     return res.json({
@@ -147,12 +150,13 @@ exports.autoDeleteRide = async (req, res) => {
     //update the ride count
     profile.noOfRidesPublished = profile.noOfRidesPublished + 1;
 
-    await profile.save();
     await ride.save();
+    await profile.save();
 
     const updatedRideDetails = await User.findById(id)
       .populate("additionalDetails")
       .populate("ridePublished")
+      .populate("rideBooked")
       .exec();
 
     return res.json({

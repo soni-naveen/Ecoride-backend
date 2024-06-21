@@ -43,6 +43,7 @@ exports.completeProfile = async (req, res) => {
     const updatedUserDetails = await User.findByIdAndUpdate(id)
       .populate("additionalDetails")
       .populate("ridePublished")
+      .populate("rideBooked")
       .exec();
 
     return res.json({
@@ -82,9 +83,10 @@ exports.updateProfile = async (req, res) => {
     await profile.save();
 
     // Find the updated user details
-    const updatedUserDetails = await User.findById(id)
+    const updatedUserDetails = await User.findByIdAndUpdate(id)
       .populate("additionalDetails")
       .populate("ridePublished")
+      .populate("rideBooked")
       .exec();
 
     return res.json({
@@ -122,6 +124,7 @@ exports.myProfileAbout = async (req, res) => {
     const updatedUserDetails = await User.findById(id)
       .populate("additionalDetails")
       .populate("ridePublished")
+      .populate("rideBooked")
       .exec();
 
     return res.json({
@@ -169,11 +172,27 @@ exports.getAllUserDetails = async (req, res) => {
 
     const userDetails = await User.findById(id)
       .populate("additionalDetails")
-      .populate("ridePublished")
-      .populate("rideBooked")
+      .populate({
+        path: "ridePublished",
+        populate: [
+          { path: "pendingPassengers" },
+          { path: "confirmedPassengers" },
+        ],
+      })
+      .populate({
+        path: "rideBooked",
+        populate: [{ path: "profile" }, { path: "ride" }],
+      })
       .exec();
 
-    res.status(200).json({
+    if (!userDetails) {
+      return res.status(400).json({
+        success: false,
+        message: "User doesn't exists",
+      });
+    }
+
+    return res.status(200).json({
       success: true,
       message: "User Data fetched successfully",
       data: userDetails,
@@ -206,6 +225,8 @@ exports.updateDisplayPicture = async (req, res) => {
 
     const userDetails = await User.findById(userId)
       .populate("additionalDetails")
+      .populate("ridePublished")
+      .populate("rideBooked")
       .exec();
 
     res.status(200).json({
@@ -242,6 +263,7 @@ exports.verifyProfile = async (req, res) => {
     const updatedProfile = await User.findById(userId)
       .populate("additionalDetails")
       .populate("ridePublished")
+      .populate("rideBooked")
       .exec();
 
     return res.json({
@@ -287,12 +309,12 @@ exports.deleteAccount = async (req, res) => {
     // Now Delete User
     await User.findByIdAndDelete({ _id: id });
 
-    const userMailSent = await mailSender(
+    await mailSender(
       email,
       "Account Deleted Confirmation",
       accountDeletedMail(email)
     );
-    const ecorideMailSent = await mailSender(
+    await mailSender(
       "ecoride.in@gmail.com",
       "User Deleted Account",
       deletedAccountInfoMail(email)
