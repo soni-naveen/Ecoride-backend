@@ -99,16 +99,16 @@ exports.signup = async (req, res) => {
     }
 
     //Find most recent OTP stored for the user
-    const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+    const recentOtp = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
 
     //validate OTP
-    if (response.length == 0) {
+    if (recentOtp.length == 0) {
       //OTP not found
       return res.status(400).json({
         success: false,
         message: "OTP not found",
       });
-    } else if (otp != response[0].otp) {
+    } else if (otp != recentOtp[0].otp) {
       //Invalid OTP
       return res.status(400).json({
         success: false,
@@ -171,6 +171,7 @@ exports.signup = async (req, res) => {
         email: user.email,
         id: user._id,
       };
+      
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "24h",
       });
