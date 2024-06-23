@@ -13,12 +13,6 @@ const BookRideSchema = new mongoose.Schema(
     rideStatus: {
       type: String,
     },
-    travellers: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Profile",
-      },
-    ],
   },
   { versionKey: false }
 );

@@ -123,6 +123,49 @@ exports.deleteRide = async (req, res) => {
   }
 };
 
+//Cancel Booked Ride handler function
+exports.cancelBookedRide = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const { rideId } = req.body;
+
+    // Find the booked ride id
+    const userDetails = await User.findById(id);
+    const bookedRide = await BookedRide.findById(userDetails.rideBooked);
+
+    bookedRide.profile = null;
+    bookedRide.ride = null;
+    bookedRide.rideStatus = "";
+
+    await bookedRide.save();
+
+    const updatedRide = await Ride.findOneAndUpdate(
+      { _id: rideId },
+      { $pull: { pendingPassengers: userDetails.additionalDetails._id } },
+      { $pull: { confirmedPassengers: userDetails.additionalDetails._id } },
+      { new: true }
+    ).populate("profile");
+
+    const updatedBookedRideDetails = await User.findByIdAndUpdate(id)
+      .populate("additionalDetails")
+      .populate("ridePublished")
+      .populate("rideBooked")
+      .exec();
+
+    return res.json({
+      success: true,
+      message: "Ride Cancelled Successfully",
+      updatedBookedRideDetails,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 //Automatically delete Ride handler function
 exports.autoDeleteRide = async (req, res) => {
   try {
@@ -285,11 +328,11 @@ exports.sendBookRequest = async (req, res) => {
   try {
     const id = req.user.id;
     const { rideId } = req.body;
-    const user = await User.findById(id);
 
-    // Check if the ride exists
+    const user = await User.findById(id);
     const ride = await Ride.findById(rideId);
 
+    // Check if the ride exists
     if (!ride) {
       return res.status(404).json({
         success: false,
@@ -318,9 +361,23 @@ exports.sendBookRequest = async (req, res) => {
       .populate("ride")
       .populate("profile");
 
+    const updatedUserDetails = await User.findById(id)
+      .populate("additionalDetails")
+      .populate({
+        path: "ridePublished",
+        populate: [
+          { path: "pendingPassengers" },
+          { path: "confirmedPassengers" },
+        ],
+      })
+      .populate({
+        path: "rideBooked",
+        populate: [{ path: "profile" }, { path: "ride" }],
+      })
+      .exec();
+
     return res.status(200).json({
-      bookedRide,
-      rideDetails,
+      updatedUserDetails,
       success: true,
       message: "Book request sent successfully",
     });

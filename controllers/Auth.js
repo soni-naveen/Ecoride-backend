@@ -99,7 +99,9 @@ exports.signup = async (req, res) => {
     }
 
     //Find most recent OTP stored for the user
-    const recentOtp = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+    const recentOtp = await OTP.find({ email })
+      .sort({ createdAt: -1 })
+      .limit(1);
 
     //validate OTP
     if (recentOtp.length == 0) {
@@ -156,7 +158,6 @@ exports.signup = async (req, res) => {
         profile: null,
         ride: null,
         rideStatus: "",
-        travellers: [],
       });
 
       const user = await User.create({
@@ -171,7 +172,7 @@ exports.signup = async (req, res) => {
         email: user.email,
         id: user._id,
       };
-      
+
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "24h",
       });
@@ -218,8 +219,18 @@ exports.login = async (req, res) => {
     //check for registered user
     const user = await User.findOne({ email })
       .populate("additionalDetails")
-      .populate("ridePublished")
-      .populate("rideBooked");
+      .populate({
+        path: "ridePublished",
+        populate: [
+          { path: "pendingPassengers" },
+          { path: "confirmedPassengers" },
+        ],
+      })
+      .populate({
+        path: "rideBooked",
+        populate: [{ path: "profile" }, { path: "ride" }],
+      })
+      .exec();
 
     if (!user) {
       return res.status(401).json({
