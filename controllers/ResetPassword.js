@@ -2,6 +2,7 @@ const User = require("../models/User");
 const mailSender = require("../utils/mailSender");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const { resetPasswordMail } = require("../mail/templates/resetPasswordMail");
 
 exports.resetPasswordToken = async (req, res) => {
   try {
@@ -25,13 +26,7 @@ exports.resetPasswordToken = async (req, res) => {
     );
     // console.log("DETAILS", updatedDetails);
 
-    const url = `https://theecoride.in/update-password/${token}`;
-
-    await mailSender(
-      email,
-      "Password Reset",
-      `Your Link to Reset Password is <br> ${url} <br> Please click this url to reset your password.`
-    );
+    await mailSender(email, "Password Reset", resetPasswordMail(token));
 
     res.json({
       success: true,

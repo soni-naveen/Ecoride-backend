@@ -1,9 +1,9 @@
-exports.accountDeletedMail = (email) => {
+exports.resetPasswordMail = (token) => {
   return `<!DOCTYPE html>
       <html>
       <head>
           <meta charset="UTF-8">
-          <title>Account deleted successfully</title>
+          <title>Reset your password</title>
           <style>
               body {
                   background-color: #ffffff;
@@ -28,22 +28,10 @@ exports.accountDeletedMail = (email) => {
                   font-size: 18px;
                   font-weight: bold;
                   margin-bottom: 20px;
-                  text-decoration: underline;
               }
               .body {
                   font-size: 16px;
                   margin-bottom: 20px;
-              }
-              .cta {
-                  display: inline-block;
-                  padding: 10px 20px;
-                  background-color: #FFD60A;
-                  color: #000000;
-                  text-decoration: none;
-                  border-radius: 5px;
-                  font-size: 16px;
-                  font-weight: bold;
-                  margin-top: 20px;
               }
               .support {
                   font-size: 14px;
@@ -55,16 +43,22 @@ exports.accountDeletedMail = (email) => {
               }
           </style>
       </head>
+      
       <body>
           <div class="container">
-              <div class="message">Your account deleted successfully</div>
+              <div class="message">Reset your password</div>
               <div class="body">
-                  <p>Dear ${email},</p>
-                  <p>We are writing to confirm that your request to delete your account with EcoRide has been successfully processed.</p>
-                  <p>We are sorry to see you go and would like to take this opportunity to thank you for having been a part of our community. Your feedback and participation have been valuable to us, and we hope you had a positive experience during your time with us.</p>
+                  <p>We received a request to reset the password for your account.</p>
+                  <p>If you did not make this request, please ignore this email.</p>
+                  <br>
+                  <p> To reset your password, please click the link below:</p>
+                  <p> https://theecoride.in/update-password/${token}</p>
+                  <p>For security purposes, this link will expire in 5 minutes.</p>
               </div>
-              <div class="support">If you have any further questions or need immediate assistance, please feel free to reach
-              out to us at <a href="mailto:ecoride.in@gmail.com">ecoride.in@gmail.com</a>. We are here to help!</div>
+              <div class="support">If you have any questions or need further assistance, please feel free to reach out to us
+                  at
+                  <a href="mailto:ecoride.in@gmail.com">ecoride.in@gmail.com</a>. We are here to help you!
+              </div>
           </div>
       </body>
       </html>`;
