@@ -34,7 +34,7 @@ exports.completeProfile = async (req, res) => {
     const updatedImage = await Profile.findByIdAndUpdate(
       profile,
       {
-        image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}&chars=1`,
+        image: `https://api.dicebear.com/9.x/initials/svg?seed=${firstName}&chars=1`,
       },
       { new: true }
     ).exec();

@@ -58,8 +58,17 @@ exports.createRide = async (req, res) => {
 
     const newRide = await User.findById(userId)
       .populate("additionalDetails")
-      .populate("ridePublished")
-      .populate("rideBooked")
+      .populate({
+        path: "ridePublished",
+        populate: [
+          { path: "pendingPassengers" },
+          { path: "confirmedPassengers" },
+        ],
+      })
+      .populate({
+        path: "rideBooked",
+        populate: [{ path: "profile" }, { path: "ride" }],
+      })
       .exec();
 
     // Return the new ride and a success message
@@ -105,8 +114,17 @@ exports.deleteRide = async (req, res) => {
 
     const updatedRideDetails = await User.findByIdAndUpdate(id)
       .populate("additionalDetails")
-      .populate("ridePublished")
-      .populate("rideBooked")
+      .populate({
+        path: "ridePublished",
+        populate: [
+          { path: "pendingPassengers" },
+          { path: "confirmedPassengers" },
+        ],
+      })
+      .populate({
+        path: "rideBooked",
+        populate: [{ path: "profile" }, { path: "ride" }],
+      })
       .exec();
 
     return res.json({
@@ -148,8 +166,17 @@ exports.cancelBookedRide = async (req, res) => {
 
     const updatedBookedRideDetails = await User.findByIdAndUpdate(id)
       .populate("additionalDetails")
-      .populate("ridePublished")
-      .populate("rideBooked")
+      .populate({
+        path: "ridePublished",
+        populate: [
+          { path: "pendingPassengers" },
+          { path: "confirmedPassengers" },
+        ],
+      })
+      .populate({
+        path: "rideBooked",
+        populate: [{ path: "profile" }, { path: "ride" }],
+      })
       .exec();
 
     return res.json({
@@ -198,8 +225,17 @@ exports.autoDeleteRide = async (req, res) => {
 
     const updatedRideDetails = await User.findById(id)
       .populate("additionalDetails")
-      .populate("ridePublished")
-      .populate("rideBooked")
+      .populate({
+        path: "ridePublished",
+        populate: [
+          { path: "pendingPassengers" },
+          { path: "confirmedPassengers" },
+        ],
+      })
+      .populate({
+        path: "rideBooked",
+        populate: [{ path: "profile" }, { path: "ride" }],
+      })
       .exec();
 
     return res.json({
