@@ -1,4 +1,4 @@
-exports.otpTemplate = (otp) => {
+exports.emailTemplate = (otp) => {
   return `<!DOCTYPE html>
 	<html>
 	<head>
