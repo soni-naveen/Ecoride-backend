@@ -96,6 +96,31 @@ exports.deleteRide = async (req, res) => {
     const userDetails = await User.findById(id);
     const ride = await Ride.findById(userDetails.ridePublished);
 
+    const passengerIds = ride.pendingPassengers.map(
+      (passenger) => passenger._id
+    );
+
+    const pendingPassengerProfiles = await Profile.find({
+      _id: { $in: passengerIds },
+    });
+
+    const emailAddresses = pendingPassengerProfiles.map(
+      (profile) => profile.email
+    );
+
+    const bookedRideProfiles = await BookedRide.find({
+      email: { $in: emailAddresses },
+    });
+
+    const updatePromises = bookedRideProfiles.map((bookedRide) => {
+      bookedRide.profile = null;
+      bookedRide.ride = null;
+      bookedRide.rideStatus = "";
+      return bookedRide.save();
+    });
+
+    await Promise.all(updatePromises);
+
     // delete ride details
     ride.fromWhere = "";
     ride.toWhere = "";
@@ -202,6 +227,31 @@ exports.autoDeleteRide = async (req, res) => {
     const userDetails = await User.findById(id);
     const profile = await Profile.findById(userDetails.additionalDetails);
     const ride = await Ride.findById(userDetails.ridePublished);
+
+    const passengerIds = ride.pendingPassengers.map(
+      (passenger) => passenger._id
+    );
+
+    const pendingPassengerProfiles = await Profile.find({
+      _id: { $in: passengerIds },
+    });
+
+    const emailAddresses = pendingPassengerProfiles.map(
+      (profile) => profile.email
+    );
+
+    const bookedRideProfiles = await BookedRide.find({
+      email: { $in: emailAddresses },
+    });
+
+    const updatePromises = bookedRideProfiles.map((bookedRide) => {
+      bookedRide.profile = null;
+      bookedRide.ride = null;
+      bookedRide.rideStatus = "";
+      return bookedRide.save();
+    });
+
+    await Promise.all(updatePromises);
 
     // delete ride details
     ride.fromWhere = "";
@@ -359,6 +409,34 @@ exports.getRideDetails = async (req, res) => {
   }
 };
 
+//Get booked ride details handler function
+exports.getBookedRideDetails = async (req, res) => {
+  try {
+    const { bookedRideId } = req.body;
+
+    const bookedRideDetails = await BookedRide.findByIdAndUpdate(bookedRideId)
+      .populate("profile")
+      .populate("ride")
+      .exec();
+
+    if (!bookedRideDetails) {
+      return res.status(400).json({
+        success: false,
+        message: `Could not find booked ride details`,
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: bookedRideDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 //Send book request handler function
 exports.sendBookRequest = async (req, res) => {
   try {
@@ -381,7 +459,9 @@ exports.sendBookRequest = async (req, res) => {
       rideId,
       { $push: { pendingPassengers: user.additionalDetails } },
       { new: true }
-    ).populate("pendingPassengers");
+    )
+      .populate("pendingPassengers")
+      .populate("confirmedPassengers");
 
     const bookedRide = await BookedRide.findOneAndUpdate(
       { _id: user.rideBooked },
@@ -416,6 +496,56 @@ exports.sendBookRequest = async (req, res) => {
       updatedUserDetails,
       success: true,
       message: "Book request sent successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//confirm the booking handler function
+exports.confirmBooking = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const passId = req.body.passId;
+
+    // Find the ride id
+    const userDetails = await User.findById(id);
+    const ride = await Ride.findById(userDetails.ridePublished);
+    const profile = await Profile.findById(passId);
+
+    const rideDetails = await Ride.findByIdAndUpdate(
+      ride,
+      {
+        $push: { confirmedPassengers: passId },
+        $pull: { pendingPassengers: passId },
+      },
+      { new: true }
+    )
+      .populate("pendingPassengers")
+      .populate("confirmedPassengers");
+
+    const passEmail = profile.email;
+
+    const bookedRide = await BookedRide.findOneAndUpdate(
+      { email: passEmail },
+      {
+        $set: {
+          rideStatus: "Confirmed",
+        },
+      },
+      { new: true }
+    )
+      .populate("ride")
+      .populate("profile");
+
+    return res.status(200).json({
+      rideDetails,
+      bookedRide,
+      success: true,
+      message: "Booking Confirmed!",
     });
   } catch (error) {
     return res.status(500).json({

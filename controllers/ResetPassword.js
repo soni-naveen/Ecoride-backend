@@ -10,8 +10,9 @@ exports.resetPasswordToken = async (req, res) => {
     const user = await User.findOne({ email: email });
     if (!user) {
       return res.json({
+        error: `This email is not registered with us.`,
         success: false,
-        message: `This email: ${email} is not registered with us enter a valid email `,
+        message: `Email is not registered`,
       });
     }
     const token = crypto.randomBytes(20).toString("hex");
@@ -37,7 +38,7 @@ exports.resetPasswordToken = async (req, res) => {
     return res.json({
       error: error.message,
       success: false,
-      message: `Some Error in Sending the Reset Message`,
+      message: `Some Error in Sending the Reset Email`,
     });
   }
 };

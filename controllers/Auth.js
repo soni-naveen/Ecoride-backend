@@ -122,7 +122,7 @@ exports.signup = async (req, res) => {
 
       //Entry create in database
       const profileDetails = await Profile.create({
-        email: email,
+        email,
         image: `https://api.dicebear.com/9.x/initials/svg?seed=${email}&chars=1`,
         firstName: null,
         lastName: null,
@@ -139,6 +139,7 @@ exports.signup = async (req, res) => {
       });
 
       const rideDetails = await Ride.create({
+        email,
         profile: profileDetails._id,
         fromWhere: "",
         toWhere: "",
@@ -155,6 +156,7 @@ exports.signup = async (req, res) => {
       });
 
       const bookedRideDetails = await BookedRide.create({
+        email,
         profile: null,
         ride: null,
         rideStatus: "",
