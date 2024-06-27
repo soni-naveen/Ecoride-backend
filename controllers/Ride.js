@@ -96,20 +96,35 @@ exports.deleteRide = async (req, res) => {
     const userDetails = await User.findById(id);
     const ride = await Ride.findById(userDetails.ridePublished);
 
-    const passengerIds = ride.pendingPassengers.map(
+    const pendingPassIds = ride.pendingPassengers.map(
       (passenger) => passenger._id
     );
 
     const pendingPassengerProfiles = await Profile.find({
-      _id: { $in: passengerIds },
+      _id: { $in: pendingPassIds },
     });
 
-    const emailAddresses = pendingPassengerProfiles.map(
+    const pendingEmails = pendingPassengerProfiles.map(
+      (profile) => profile.email
+    );
+
+    const confirmPassId = ride.confirmedPassengers.map(
+      (passenger) => passenger._id
+    );
+
+    const confirmPassengerProfiles = await Profile.find({
+      _id: { $in: confirmPassId },
+    });
+
+    const confirmEmails = confirmPassengerProfiles.map(
       (profile) => profile.email
     );
 
     const bookedRideProfiles = await BookedRide.find({
-      email: { $in: emailAddresses },
+      $or: [
+        { email: { $in: pendingEmails } },
+        { email: { $in: confirmEmails } },
+      ],
     });
 
     const updatePromises = bookedRideProfiles.map((bookedRide) => {
@@ -184,8 +199,12 @@ exports.cancelBookedRide = async (req, res) => {
 
     const updatedRide = await Ride.findOneAndUpdate(
       { _id: rideId },
-      { $pull: { pendingPassengers: userDetails.additionalDetails._id } },
-      { $pull: { confirmedPassengers: userDetails.additionalDetails._id } },
+      {
+        $pull: {
+          pendingPassengers: userDetails.additionalDetails._id,
+          confirmedPassengers: userDetails.additionalDetails._id,
+        },
+      },
       { new: true }
     ).populate("profile");
 
@@ -228,20 +247,35 @@ exports.autoDeleteRide = async (req, res) => {
     const profile = await Profile.findById(userDetails.additionalDetails);
     const ride = await Ride.findById(userDetails.ridePublished);
 
-    const passengerIds = ride.pendingPassengers.map(
+    const pendingPassIds = ride.pendingPassengers.map(
       (passenger) => passenger._id
     );
 
     const pendingPassengerProfiles = await Profile.find({
-      _id: { $in: passengerIds },
+      _id: { $in: pendingPassIds },
     });
 
-    const emailAddresses = pendingPassengerProfiles.map(
+    const pendingEmails = pendingPassengerProfiles.map(
+      (profile) => profile.email
+    );
+
+    const confirmPassId = ride.confirmedPassengers.map(
+      (passenger) => passenger._id
+    );
+
+    const confirmPassengerProfiles = await Profile.find({
+      _id: { $in: confirmPassId },
+    });
+
+    const confirmEmails = confirmPassengerProfiles.map(
       (profile) => profile.email
     );
 
     const bookedRideProfiles = await BookedRide.find({
-      email: { $in: emailAddresses },
+      $or: [
+        { email: { $in: pendingEmails } },
+        { email: { $in: confirmEmails } },
+      ],
     });
 
     const updatePromises = bookedRideProfiles.map((bookedRide) => {
