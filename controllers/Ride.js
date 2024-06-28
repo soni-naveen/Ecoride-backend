@@ -2,6 +2,21 @@ const User = require("../models/User");
 const Profile = require("../models/Profile");
 const Ride = require("../models/Ride");
 const BookedRide = require("../models/BookedRide");
+const mailSender = require("../utils/mailSender");
+const { confirmBookingMail } = require("../mail/templates/confirmBookingMail");
+const {
+  sendBookRequestMail,
+} = require("../mail/templates/sendBookRequestMail");
+const {
+  cancelBookedRideMailToDriver,
+} = require("../mail/templates/cancelBookedRideMailToDriver");
+const {
+  cancelBookedRideMailToUser,
+} = require("../mail/templates/cancelBookedRideMailToUser");
+const {
+  cancelUserBookingMail,
+} = require("../mail/templates/cancelUserBookingMail");
+const { deleteRideMail } = require("../mail/templates/deleteRideMail");
 
 //Create Ride handler function
 exports.createRide = async (req, res) => {
@@ -93,7 +108,7 @@ exports.deleteRide = async (req, res) => {
     const id = req.user.id;
 
     // Find the ride id
-    const userDetails = await User.findById(id);
+    const userDetails = await User.findById(id).populate("additionalDetails");
     const ride = await Ride.findById(userDetails.ridePublished);
 
     const pendingPassIds = ride.pendingPassengers.map(
@@ -167,6 +182,23 @@ exports.deleteRide = async (req, res) => {
       })
       .exec();
 
+    const driverName = userDetails.additionalDetails.firstName;
+
+    //======== Mail Sent =========
+    const sendCancellationEmails = async (emails) => {
+      const promises = emails.map((email) =>
+        mailSender(
+          email,
+          "Booking Request Cancelled!",
+          deleteRideMail(driverName)
+        )
+      );
+      await Promise.all(promises);
+    };
+
+    await sendCancellationEmails(pendingEmails);
+    await sendCancellationEmails(confirmEmails);
+
     return res.json({
       success: true,
       message: "Ride deleted successfully",
@@ -188,7 +220,7 @@ exports.cancelBookedRide = async (req, res) => {
     const { rideId } = req.body;
 
     // Find the booked ride id
-    const userDetails = await User.findById(id);
+    const userDetails = await User.findById(id).populate("additionalDetails");
     const bookedRide = await BookedRide.findById(userDetails.rideBooked);
 
     bookedRide.profile = null;
@@ -197,16 +229,38 @@ exports.cancelBookedRide = async (req, res) => {
 
     await bookedRide.save();
 
-    const updatedRide = await Ride.findOneAndUpdate(
-      { _id: rideId },
-      {
-        $pull: {
-          pendingPassengers: userDetails.additionalDetails._id,
-          confirmedPassengers: userDetails.additionalDetails._id,
-        },
+    const ride = await Ride.findById(rideId);
+
+    const update = {
+      $pull: {
+        pendingPassengers: userDetails.additionalDetails._id,
+        confirmedPassengers: userDetails.additionalDetails._id,
       },
-      { new: true }
-    ).populate("profile");
+    };
+
+    // Check if the user is in pending or confirmed passengers
+    if (ride && ride.pendingPassengers && ride.confirmedPassengers) {
+      const isInPendingPassengers = ride.pendingPassengers.includes(
+        userDetails.additionalDetails._id
+      );
+      const isInConfirmedPassengers = ride.confirmedPassengers.includes(
+        userDetails.additionalDetails._id
+      );
+
+      // Increment noOfSeats only if the user is in confirmed passengers
+      if (isInConfirmedPassengers && !isInPendingPassengers) {
+        update.$inc = { noOfSeats: 1 };
+      }
+    } else {
+      console.error("Ride object or its properties are null or undefined");
+    }
+
+    const updatedRide = await Ride.findOneAndUpdate({ _id: rideId }, update, {
+      new: true,
+    })
+      .populate("profile")
+      .populate("pendingPassengers")
+      .populate("confirmedPassengers");
 
     const updatedBookedRideDetails = await User.findByIdAndUpdate(id)
       .populate("additionalDetails")
@@ -222,6 +276,22 @@ exports.cancelBookedRide = async (req, res) => {
         populate: [{ path: "profile" }, { path: "ride" }],
       })
       .exec();
+
+    const driverEmail = ride.email;
+    const passengerName = userDetails.additionalDetails.firstName;
+
+    //======== Mail Sent ========
+    await mailSender(
+      userDetails.email,
+      "Booking request cancelled",
+      cancelBookedRideMailToUser()
+    );
+
+    await mailSender(
+      driverEmail,
+      "Passenger cancelled ride",
+      cancelBookedRideMailToDriver(passengerName)
+    );
 
     return res.json({
       success: true,
@@ -477,7 +547,7 @@ exports.sendBookRequest = async (req, res) => {
     const id = req.user.id;
     const { rideId } = req.body;
 
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate("additionalDetails");
     const ride = await Ride.findById(rideId);
 
     // Check if the ride exists
@@ -526,6 +596,16 @@ exports.sendBookRequest = async (req, res) => {
       })
       .exec();
 
+    const driverEmail = ride.email;
+    const passengerName = user.additionalDetails.firstName;
+
+    //======== Mail Sent ========
+    await mailSender(
+      driverEmail,
+      "New Booking Request",
+      sendBookRequestMail(passengerName)
+    );
+
     return res.status(200).json({
       updatedUserDetails,
       success: true,
@@ -546,7 +626,7 @@ exports.confirmBooking = async (req, res) => {
     const passId = req.body.passId;
 
     // Find the ride id
-    const userDetails = await User.findById(id);
+    const userDetails = await User.findById(id).populate("additionalDetails");
     const ride = await Ride.findById(userDetails.ridePublished);
     const profile = await Profile.findById(passId);
 
@@ -555,6 +635,7 @@ exports.confirmBooking = async (req, res) => {
       {
         $push: { confirmedPassengers: passId },
         $pull: { pendingPassengers: passId },
+        $inc: { noOfSeats: -1 },
       },
       { new: true }
     )
@@ -575,11 +656,142 @@ exports.confirmBooking = async (req, res) => {
       .populate("ride")
       .populate("profile");
 
+    const driverName = userDetails.additionalDetails.firstName;
+    const driverNumber = userDetails.additionalDetails.contactNumber;
+
+    //======== Mail Sent =========
+    await mailSender(
+      passEmail,
+      "Booking Request Accepted",
+      confirmBookingMail(driverName, driverNumber)
+    );
+
     return res.status(200).json({
       rideDetails,
       bookedRide,
       success: true,
       message: "Booking Confirmed!",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//cancel the booking handler function
+exports.cancelPendingBooking = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const passId = req.body.passId;
+
+    // Find the ride id
+    const userDetails = await User.findById(id).populate("additionalDetails");
+    const ride = await Ride.findById(userDetails.ridePublished);
+    const profile = await Profile.findById(passId);
+
+    const rideDetails = await Ride.findByIdAndUpdate(
+      ride,
+      {
+        $pull: { pendingPassengers: passId },
+      },
+      { new: true }
+    )
+      .populate("pendingPassengers")
+      .populate("confirmedPassengers");
+
+    const passEmail = profile.email;
+
+    const bookedRide = await BookedRide.findOneAndUpdate(
+      { email: passEmail },
+      {
+        $set: {
+          profile: null,
+          ride: null,
+          rideStatus: "",
+        },
+      },
+      { new: true }
+    )
+      .populate("ride")
+      .populate("profile");
+
+    const driverName = userDetails.additionalDetails.firstName;
+
+    //======== Mail Sent =========
+    await mailSender(
+      passEmail,
+      "Booking Request Cancelled!",
+      cancelUserBookingMail(driverName)
+    );
+
+    return res.status(200).json({
+      rideDetails,
+      bookedRide,
+      success: true,
+      message: "Booking Cancelled!",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//cancel the confirmed booking handler function
+exports.cancelConfirmedBooking = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const passId = req.body.passId;
+
+    // Find the ride id
+    const userDetails = await User.findById(id).populate("additionalDetails");
+    const ride = await Ride.findById(userDetails.ridePublished);
+    const profile = await Profile.findById(passId);
+
+    const rideDetails = await Ride.findByIdAndUpdate(
+      ride,
+      {
+        $pull: { confirmedPassengers: passId },
+        $inc: { noOfSeats: 1 },
+      },
+      { new: true }
+    )
+      .populate("pendingPassengers")
+      .populate("confirmedPassengers");
+
+    const passEmail = profile.email;
+
+    const bookedRide = await BookedRide.findOneAndUpdate(
+      { email: passEmail },
+      {
+        $set: {
+          profile: null,
+          ride: null,
+          rideStatus: "",
+        },
+      },
+      { new: true }
+    )
+      .populate("ride")
+      .populate("profile");
+
+    const driverName = userDetails.additionalDetails.firstName;
+
+    //======== Mail Sent =========
+    await mailSender(
+      passEmail,
+      "Booking Request Cancelled!",
+      cancelUserBookingMail(driverName)
+    );
+
+    return res.status(200).json({
+      rideDetails,
+      bookedRide,
+      success: true,
+      message: "Booking Cancelled!",
     });
   } catch (error) {
     return res.status(500).json({
