@@ -60,12 +60,9 @@ exports.cancelUserBookingMail = (driverName) => {
             <body>
                 <div class="container">
                     <div class="message">
-                    Unfortunately, your booking request cannot be accepted by ${driverName}.
+                    Unfortunately, ${driverName} has declined your booking request.
                     </div>
                     <div class="body">
-                        <p>Dear Passenger,</p>
-                        <p>Your booking request to travel with ${driverName} has been cancelled.</p>
-                        <br>
                         <div class="btn-cont">
                             <a href="https://theecoride.in/searchride">
                                 <button>Find a new ride</button>

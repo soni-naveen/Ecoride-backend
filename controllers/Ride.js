@@ -189,7 +189,7 @@ exports.deleteRide = async (req, res) => {
       const promises = emails.map((email) =>
         mailSender(
           email,
-          "Booking Request Cancelled!",
+          "Ride Cancelled!",
           deleteRideMail(driverName)
         )
       );

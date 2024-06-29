@@ -1,4 +1,4 @@
-exports.deleteRideMail = (driverName, driverNumber) => {
+exports.deleteRideMail = (driverName) => {
     return `<!DOCTYPE html>
             <html>
             <head>
@@ -62,7 +62,7 @@ exports.deleteRideMail = (driverName, driverNumber) => {
                     <div class="message">Unfortunately ${driverName} can't take you anymore.</div>
                     <div class="body">
                         <p>Dear Passenger,</p>
-                        <p>We regret to inform you that your ride with ${driverName} has been cancelled. We apologize for any inconvenience this may cause.</p>
+                        <p>We regret to inform you that ${driverName} deleted the ride you booked. We apologize for any inconvenience this may cause.</p>
                         <p>Thank you for your understanding.</p>
                         <br>
                         <div class="btn-cont">
