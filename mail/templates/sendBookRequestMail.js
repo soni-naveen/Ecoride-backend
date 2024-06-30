@@ -47,6 +47,7 @@ exports.sendBookRequestMail = (passengerName) => {
                     text-align: center;
                 }
                 button {
+                    font-size: 17px;
                     border: none;
                     background-color: #07b2a4;
                     padding: 10px 15px;

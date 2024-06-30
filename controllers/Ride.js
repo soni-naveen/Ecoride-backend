@@ -102,6 +102,141 @@ exports.createRide = async (req, res) => {
   }
 };
 
+//Get ride details handler function
+exports.getRideDetails = async (req, res) => {
+  try {
+    const { rideId } = req.body;
+
+    const rideDetails = await Ride.findById(rideId)
+      .populate("profile")
+      .populate("pendingPassengers")
+      .populate("confirmedPassengers")
+      .exec();
+
+    if (!rideDetails) {
+      return res.status(400).json({
+        success: false,
+        message: `Could not find profile with id: ${rideId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: rideDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+//Get booked ride details handler function
+exports.getBookedRideDetails = async (req, res) => {
+  try {
+    const { bookedRideId } = req.body;
+
+    const bookedRideDetails = await BookedRide.findByIdAndUpdate(bookedRideId)
+      .populate("profile")
+      .populate("ride")
+      .exec();
+
+    if (!bookedRideDetails) {
+      return res.status(400).json({
+        success: false,
+        message: `Could not find booked ride details`,
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: bookedRideDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+//Searched rides handler function
+exports.getSearchedRides = async (req, res) => {
+  try {
+    const { st, dt, date, seats } = req.body;
+
+    // Validate inputs
+    if (!st || !dt || !date || !seats) {
+      return res.status(400).json({
+        success: false,
+        error: "Require all fields!",
+      });
+    }
+
+    // Split by comma or space and trim any surrounding spaces
+    const stFirstWord = st.split(/[, ]/)[0].trim();
+    const dtFirstWord = dt.split(/[, ]/)[0].trim();
+
+    // Create regex patterns for similar searches
+    const stPattern = new RegExp(stFirstWord, "i"); // 'i' for case-insensitive,
+    const dtPattern = new RegExp(dtFirstWord, "i");
+
+    // Find rides that match the search criteria
+    const searchedRides = await Ride.find({
+      $or: [
+        {
+          $and: [
+            { fromWhere: stPattern },
+            {
+              $or: [
+                { stopPoint1: dtPattern },
+                { stopPoint2: dtPattern },
+                { stopPoint3: dtPattern },
+                { toWhere: dtPattern },
+              ],
+            },
+          ],
+        },
+        {
+          $and: [
+            { stopPoint1: stPattern },
+            {
+              $or: [
+                { stopPoint2: dtPattern },
+                { stopPoint3: dtPattern },
+                { toWhere: dtPattern },
+              ],
+            },
+          ],
+        },
+        {
+          $and: [
+            { stopPoint2: stPattern },
+            { $or: [{ stopPoint3: dtPattern }, { toWhere: dtPattern }] },
+          ],
+        },
+        {
+          $and: [{ stopPoint3: stPattern }, { toWhere: dtPattern }],
+        },
+      ],
+      date: date,
+      noOfSeats: { $gte: seats },
+    })
+      .populate("profile")
+      .exec();
+
+    return res.status(200).json({
+      success: true,
+      data: searchedRides,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 //Delete Ride handler function
 exports.deleteRide = async (req, res) => {
   try {
@@ -213,100 +348,6 @@ exports.deleteRide = async (req, res) => {
   }
 };
 
-//Cancel Booked Ride handler function
-exports.cancelBookedRide = async (req, res) => {
-  try {
-    const id = req.user.id;
-    const { rideId } = req.body;
-
-    // Find the booked ride id
-    const userDetails = await User.findById(id).populate("additionalDetails");
-    const bookedRide = await BookedRide.findById(userDetails.rideBooked);
-
-    bookedRide.profile = null;
-    bookedRide.ride = null;
-    bookedRide.rideStatus = "";
-
-    await bookedRide.save();
-
-    const ride = await Ride.findById(rideId);
-
-    const update = {
-      $pull: {
-        pendingPassengers: userDetails.additionalDetails._id,
-        confirmedPassengers: userDetails.additionalDetails._id,
-      },
-    };
-
-    // Check if the user is in pending or confirmed passengers
-    if (ride && ride.pendingPassengers && ride.confirmedPassengers) {
-      const isInPendingPassengers = ride.pendingPassengers.includes(
-        userDetails.additionalDetails._id
-      );
-      const isInConfirmedPassengers = ride.confirmedPassengers.includes(
-        userDetails.additionalDetails._id
-      );
-
-      // Increment noOfSeats only if the user is in confirmed passengers
-      if (isInConfirmedPassengers && !isInPendingPassengers) {
-        update.$inc = { noOfSeats: 1 };
-      }
-    } else {
-      console.error("Ride object or its properties are null or undefined");
-    }
-
-    const updatedRide = await Ride.findOneAndUpdate({ _id: rideId }, update, {
-      new: true,
-    })
-      .populate("profile")
-      .populate("pendingPassengers")
-      .populate("confirmedPassengers");
-
-    const updatedBookedRideDetails = await User.findByIdAndUpdate(id)
-      .populate("additionalDetails")
-      .populate({
-        path: "ridePublished",
-        populate: [
-          { path: "pendingPassengers" },
-          { path: "confirmedPassengers" },
-        ],
-      })
-      .populate({
-        path: "rideBooked",
-        populate: [{ path: "profile" }, { path: "ride" }],
-      })
-      .exec();
-
-    const driverEmail = ride.email;
-    const passengerName = userDetails.additionalDetails.firstName;
-
-    //======== Mail Sent ========
-    await mailSender(
-      userDetails.email,
-      "Booking request cancelled",
-      cancelBookedRideMailToUser()
-    );
-
-    await mailSender(
-      driverEmail,
-      "Passenger cancelled ride",
-      cancelBookedRideMailToDriver(passengerName)
-    );
-
-    return res.json({
-      success: true,
-      message: "Ride Cancelled Successfully",
-      updatedBookedRideDetails,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
-
 //Automatically delete Ride handler function
 exports.autoDeleteRide = async (req, res) => {
   try {
@@ -406,141 +447,6 @@ exports.autoDeleteRide = async (req, res) => {
   }
 };
 
-//Searched rides handler function
-exports.getSearchedRides = async (req, res) => {
-  try {
-    const { st, dt, date, seats } = req.body;
-
-    // Validate inputs
-    if (!st || !dt || !date || !seats) {
-      return res.status(400).json({
-        success: false,
-        error: "Require all fields!",
-      });
-    }
-
-    // Split by comma, hyphen, or parentheses and trim any surrounding spaces
-    const stFirstWord = st.split(/[, ]/)[0].trim();
-    const dtFirstWord = dt.split(/[, ]/)[0].trim();
-
-    // Create regex patterns for similar searches
-    const stPattern = new RegExp(stFirstWord, "i"); // 'i' for case-insensitive,
-    const dtPattern = new RegExp(dtFirstWord, "i");
-
-    // Find rides that match the search criteria
-    const searchedRides = await Ride.find({
-      $or: [
-        {
-          $and: [
-            { fromWhere: stPattern },
-            {
-              $or: [
-                { stopPoint1: dtPattern },
-                { stopPoint2: dtPattern },
-                { stopPoint3: dtPattern },
-                { toWhere: dtPattern },
-              ],
-            },
-          ],
-        },
-        {
-          $and: [
-            { stopPoint1: stPattern },
-            {
-              $or: [
-                { stopPoint2: dtPattern },
-                { stopPoint3: dtPattern },
-                { toWhere: dtPattern },
-              ],
-            },
-          ],
-        },
-        {
-          $and: [
-            { stopPoint2: stPattern },
-            { $or: [{ stopPoint3: dtPattern }, { toWhere: dtPattern }] },
-          ],
-        },
-        {
-          $and: [{ stopPoint3: stPattern }, { toWhere: dtPattern }],
-        },
-      ],
-      date: date,
-      noOfSeats: { $gte: seats },
-    })
-      .populate("profile")
-      .exec();
-
-    return res.status(200).json({
-      success: true,
-      data: searchedRides,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
-
-//Get ride details handler function
-exports.getRideDetails = async (req, res) => {
-  try {
-    const { rideId } = req.body;
-
-    const rideDetails = await Ride.findById(rideId)
-      .populate("profile")
-      .populate("pendingPassengers")
-      .populate("confirmedPassengers")
-      .exec();
-
-    if (!rideDetails) {
-      return res.status(400).json({
-        success: false,
-        message: `Could not find profile with id: ${rideId}`,
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: rideDetails,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
-
-//Get booked ride details handler function
-exports.getBookedRideDetails = async (req, res) => {
-  try {
-    const { bookedRideId } = req.body;
-
-    const bookedRideDetails = await BookedRide.findByIdAndUpdate(bookedRideId)
-      .populate("profile")
-      .populate("ride")
-      .exec();
-
-    if (!bookedRideDetails) {
-      return res.status(400).json({
-        success: false,
-        message: `Could not find booked ride details`,
-      });
-    }
-    return res.status(200).json({
-      success: true,
-      data: bookedRideDetails,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
-
 //Send book request handler function
 exports.sendBookRequest = async (req, res) => {
   try {
@@ -619,6 +525,100 @@ exports.sendBookRequest = async (req, res) => {
   }
 };
 
+//Cancel Booked Ride handler function
+exports.cancelBookedRide = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const { rideId } = req.body;
+
+    // Find the booked ride id
+    const userDetails = await User.findById(id).populate("additionalDetails");
+    const bookedRide = await BookedRide.findById(userDetails.rideBooked);
+
+    bookedRide.profile = null;
+    bookedRide.ride = null;
+    bookedRide.rideStatus = "";
+
+    await bookedRide.save();
+
+    const ride = await Ride.findById(rideId);
+
+    const update = {
+      $pull: {
+        pendingPassengers: userDetails.additionalDetails._id,
+        confirmedPassengers: userDetails.additionalDetails._id,
+      },
+    };
+
+    // Check if the user is in pending or confirmed passengers
+    if (ride && ride.pendingPassengers && ride.confirmedPassengers) {
+      const isInPendingPassengers = ride.pendingPassengers.includes(
+        userDetails.additionalDetails._id
+      );
+      const isInConfirmedPassengers = ride.confirmedPassengers.includes(
+        userDetails.additionalDetails._id
+      );
+
+      // Increment noOfSeats only if the user is in confirmed passengers
+      if (isInConfirmedPassengers && !isInPendingPassengers) {
+        update.$inc = { noOfSeats: 1 };
+      }
+    } else {
+      console.error("Ride object or its properties are null or undefined");
+    }
+
+    const updatedRide = await Ride.findOneAndUpdate({ _id: rideId }, update, {
+      new: true,
+    })
+      .populate("profile")
+      .populate("pendingPassengers")
+      .populate("confirmedPassengers");
+
+    const updatedBookedRideDetails = await User.findByIdAndUpdate(id)
+      .populate("additionalDetails")
+      .populate({
+        path: "ridePublished",
+        populate: [
+          { path: "pendingPassengers" },
+          { path: "confirmedPassengers" },
+        ],
+      })
+      .populate({
+        path: "rideBooked",
+        populate: [{ path: "profile" }, { path: "ride" }],
+      })
+      .exec();
+
+    const driverEmail = ride.email;
+    const passengerName = userDetails.additionalDetails.firstName;
+
+    //======== Mail Sent ========
+    await mailSender(
+      userDetails.email,
+      "Booking Request Cancelled",
+      cancelBookedRideMailToUser()
+    );
+
+    await mailSender(
+      driverEmail,
+      "Passenger Withdrew Their Request",
+      cancelBookedRideMailToDriver(passengerName)
+    );
+
+    return res.json({
+      success: true,
+      message: "Ride Cancelled Successfully",
+      updatedBookedRideDetails,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 //confirm the booking handler function
 exports.confirmBooking = async (req, res) => {
   try {
@@ -662,7 +662,7 @@ exports.confirmBooking = async (req, res) => {
     //======== Mail Sent =========
     await mailSender(
       passEmail,
-      "Booking Request Accepted",
+      "Booking Request Accepted!",
       confirmBookingMail(driverName, driverNumber)
     );
 
@@ -722,7 +722,7 @@ exports.cancelPendingBooking = async (req, res) => {
     //======== Mail Sent =========
     await mailSender(
       passEmail,
-      "Booking Request Cancelled!",
+      "Booking Request Declined!",
       cancelUserBookingMail(driverName)
     );
 
@@ -783,7 +783,7 @@ exports.cancelConfirmedBooking = async (req, res) => {
     //======== Mail Sent =========
     await mailSender(
       passEmail,
-      "Booking Request Cancelled!",
+      "Booking Request Declined!",
       cancelUserBookingMail(driverName)
     );
 

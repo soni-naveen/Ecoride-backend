@@ -47,6 +47,7 @@ exports.cancelBookedRideMailToDriver = (passengerName) => {
                       text-align: center;
                   }
                   button {
+                      font-size: 17px;
                       border: none;
                       background-color: #07b2a4;
                       padding: 10px 15px;
@@ -59,7 +60,9 @@ exports.cancelBookedRideMailToDriver = (passengerName) => {
           
           <body>
               <div class="container">
-                  <div class="message">${passengerName} has cancelled their ride with you.</div>
+                  <div class="message">
+                  Unfortunately, ${passengerName} has cancelled their ride booking and is no longer interested in travelling with you.
+                  </div>
                   <div class="body">
                       <div class="btn-cont">
                           <a href="https://theecoride.in/dashboard/yourRides?type=published">
