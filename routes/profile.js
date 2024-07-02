@@ -10,6 +10,8 @@ const {
   updateDisplayPicture,
   verifyProfile,
   fullProfile,
+  getInboxMessages,
+  deleteInboxMessage,
 } = require("../controllers/Profile");
 
 // ********************************************************************************************************
@@ -17,6 +19,8 @@ const {
 // ********************************************************************************************************
 
 router.post("/fullProfile", fullProfile);
+router.post("/getInboxMessages", getInboxMessages);
+router.post("/deleteInboxMessage", auth, deleteInboxMessage);
 router.get("/getUserDetails", auth, getAllUserDetails);
 router.put("/completeProfile", auth, completeProfile);
 router.put("/updateProfile", auth, updateProfile);

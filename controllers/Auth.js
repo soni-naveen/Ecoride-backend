@@ -3,6 +3,7 @@ const Ride = require("../models/Ride");
 const OTP = require("../models/OTP");
 const Profile = require("../models/Profile");
 const BookedRide = require("../models/BookedRide");
+const Inbox = require("../models/Inbox");
 const otpGenerator = require("otp-generator");
 const mailSender = require("../utils/mailSender");
 const { passwordUpdated } = require("../mail/templates/passwordUpdate");
@@ -162,12 +163,18 @@ exports.signup = async (req, res) => {
         rideStatus: "",
       });
 
+      const inbox = await Inbox.create({
+        email,
+        message: [],
+      });
+
       const user = await User.create({
         email,
         password: hashedPassword,
         additionalDetails: profileDetails._id,
         ridePublished: rideDetails._id,
         rideBooked: bookedRideDetails._id,
+        inbox: inbox._id,
       });
 
       const payload = {
@@ -232,6 +239,7 @@ exports.login = async (req, res) => {
         path: "rideBooked",
         populate: [{ path: "profile" }, { path: "ride" }],
       })
+      .populate("inbox")
       .exec();
 
     if (!user) {

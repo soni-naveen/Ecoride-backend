@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Profile = require("../models/Profile");
 const Ride = require("../models/Ride");
 const BookedRide = require("../models/BookedRide");
+const Inbox = require("../models/Inbox");
 const mailSender = require("../utils/mailSender");
 const { confirmBookingMail } = require("../mail/templates/confirmBookingMail");
 const {
@@ -84,6 +85,7 @@ exports.createRide = async (req, res) => {
         path: "rideBooked",
         populate: [{ path: "profile" }, { path: "ride" }],
       })
+      .populate("inbox")
       .exec();
 
     // Return the new ride and a success message
@@ -315,6 +317,7 @@ exports.deleteRide = async (req, res) => {
         path: "rideBooked",
         populate: [{ path: "profile" }, { path: "ride" }],
       })
+      .populate("inbox")
       .exec();
 
     const driverName = userDetails.additionalDetails.firstName;
@@ -322,11 +325,7 @@ exports.deleteRide = async (req, res) => {
     //======== Mail Sent =========
     const sendCancellationEmails = async (emails) => {
       const promises = emails.map((email) =>
-        mailSender(
-          email,
-          "Ride Cancelled!",
-          deleteRideMail(driverName)
-        )
+        mailSender(email, "Ride Cancelled!", deleteRideMail(driverName))
       );
       await Promise.all(promises);
     };
@@ -487,6 +486,18 @@ exports.sendBookRequest = async (req, res) => {
       .populate("ride")
       .populate("profile");
 
+    const driverEmail = ride.email;
+
+    const sendNotification = await Inbox.findOneAndUpdate(
+      { email: driverEmail },
+      {
+        $push: {
+          message: `New ride booking request from ${user.additionalDetails.firstName}`,
+        },
+      },
+      { new: true }
+    );
+
     const updatedUserDetails = await User.findById(id)
       .populate("additionalDetails")
       .populate({
@@ -500,9 +511,9 @@ exports.sendBookRequest = async (req, res) => {
         path: "rideBooked",
         populate: [{ path: "profile" }, { path: "ride" }],
       })
+      .populate("inbox")
       .exec();
 
-    const driverEmail = ride.email;
     const passengerName = user.additionalDetails.firstName;
 
     //======== Mail Sent ========
@@ -574,6 +585,19 @@ exports.cancelBookedRide = async (req, res) => {
       .populate("pendingPassengers")
       .populate("confirmedPassengers");
 
+    const driverEmail = ride.email;
+    const passengerName = userDetails.additionalDetails.firstName;
+
+    const sendNotification = await Inbox.findOneAndUpdate(
+      { email: driverEmail },
+      {
+        $push: {
+          message: `${passengerName} withdrew their booking request.`,
+        },
+      },
+      { new: true }
+    );
+
     const updatedBookedRideDetails = await User.findByIdAndUpdate(id)
       .populate("additionalDetails")
       .populate({
@@ -587,10 +611,8 @@ exports.cancelBookedRide = async (req, res) => {
         path: "rideBooked",
         populate: [{ path: "profile" }, { path: "ride" }],
       })
+      .populate("inbox")
       .exec();
-
-    const driverEmail = ride.email;
-    const passengerName = userDetails.additionalDetails.firstName;
 
     //======== Mail Sent ========
     await mailSender(
@@ -657,6 +679,17 @@ exports.confirmBooking = async (req, res) => {
       .populate("profile");
 
     const driverName = userDetails.additionalDetails.firstName;
+
+    const sendNotification = await Inbox.findOneAndUpdate(
+      { email: passEmail },
+      {
+        $push: {
+          message: `${driverName} has accepted your booking request`,
+        },
+      },
+      { new: true }
+    );
+
     const driverNumber = userDetails.additionalDetails.contactNumber;
 
     //======== Mail Sent =========
@@ -719,6 +752,16 @@ exports.cancelPendingBooking = async (req, res) => {
 
     const driverName = userDetails.additionalDetails.firstName;
 
+    const sendNotification = await Inbox.findOneAndUpdate(
+      { email: passEmail },
+      {
+        $push: {
+          message: `${driverName} has declined your booking request`,
+        },
+      },
+      { new: true }
+    );
+
     //======== Mail Sent =========
     await mailSender(
       passEmail,
@@ -779,6 +822,16 @@ exports.cancelConfirmedBooking = async (req, res) => {
       .populate("profile");
 
     const driverName = userDetails.additionalDetails.firstName;
+
+    const sendNotification = await Inbox.findOneAndUpdate(
+      { email: passEmail },
+      {
+        $push: {
+          message: `${driverName} has declined your booking request`,
+        },
+      },
+      { new: true }
+    );
 
     //======== Mail Sent =========
     await mailSender(

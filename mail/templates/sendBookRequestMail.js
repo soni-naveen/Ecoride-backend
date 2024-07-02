@@ -63,7 +63,7 @@ exports.sendBookRequestMail = (passengerName) => {
                 <div class="message">${passengerName} has requested to book your ride.</div>
                 <div class="body">
                     <p>You have received a new ride booking request from ${passengerName}.</p>
-                    <p>Review ${passengerName} profiles and accept their request to ride with you.</p>
+                    <p>Review ${passengerName} profile and accept their request to ride with you.</p>
                     <br>
                     <div class="btn-cont">
                         <a href="https://theecoride.in/dashboard/yourRides?type=published">

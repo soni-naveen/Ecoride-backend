@@ -15,12 +15,6 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Profile",
     },
-    token: {
-      type: String,
-    },
-    resetPasswordExpires: {
-      type: Date,
-    },
     ridePublished: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Ride",
@@ -28,6 +22,16 @@ const userSchema = new mongoose.Schema(
     rideBooked: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "BookedRide",
+    },
+    inbox: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Inbox",
+    },
+    token: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
     },
   },
   { versionKey: false }

@@ -3,6 +3,7 @@ const Profile = require("../models/Profile");
 const User = require("../models/User");
 const Ride = require("../models/Ride");
 const BookedRide = require("../models/BookedRide");
+const Inbox = require("../models/Inbox");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const {
   deletedAccountInfoMail,
@@ -44,6 +45,7 @@ exports.completeProfile = async (req, res) => {
       .populate("additionalDetails")
       .populate("ridePublished")
       .populate("rideBooked")
+      .populate("inbox")
       .exec();
 
     return res.json({
@@ -87,6 +89,7 @@ exports.updateProfile = async (req, res) => {
       .populate("additionalDetails")
       .populate("ridePublished")
       .populate("rideBooked")
+      .populate("inbox")
       .exec();
 
     return res.json({
@@ -125,6 +128,7 @@ exports.myProfileAbout = async (req, res) => {
       .populate("additionalDetails")
       .populate("ridePublished")
       .populate("rideBooked")
+      .populate("inbox")
       .exec();
 
     return res.json({
@@ -183,6 +187,7 @@ exports.getAllUserDetails = async (req, res) => {
         path: "rideBooked",
         populate: [{ path: "profile" }, { path: "ride" }],
       })
+      .populate("inbox")
       .exec();
 
     if (!userDetails) {
@@ -227,6 +232,7 @@ exports.updateDisplayPicture = async (req, res) => {
       .populate("additionalDetails")
       .populate("ridePublished")
       .populate("rideBooked")
+      .populate("inbox")
       .exec();
 
     res.status(200).json({
@@ -264,6 +270,7 @@ exports.verifyProfile = async (req, res) => {
       .populate("additionalDetails")
       .populate("ridePublished")
       .populate("rideBooked")
+      .populate("inbox")
       .exec();
 
     return res.json({
@@ -275,6 +282,83 @@ exports.verifyProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+exports.getInboxMessages = async (req, res) => {
+  try {
+    const inboxId = req.body.inboxId;
+
+    const inbox = await Inbox.findById(inboxId);
+
+    if (!inbox) {
+      return res.status(400).json({
+        success: false,
+        message: `Could not fetch messages.`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: inbox,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.deleteInboxMessage = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const msg = req.body.msg;
+
+    const user = await User.findById(id);
+
+    const inbox = await Inbox.findById(user.inbox);
+
+    if (!inbox) {
+      return res.status(400).json({
+        success: false,
+        message: `Could not fetch messages.`,
+      });
+    }
+
+    await Inbox.findByIdAndUpdate(
+      inbox,
+      {
+        $pull: { message: msg },
+      },
+      { new: true }
+    );
+
+    const userDetails = await User.findById(id)
+      .populate("additionalDetails")
+      .populate({
+        path: "ridePublished",
+        populate: [
+          { path: "pendingPassengers" },
+          { path: "confirmedPassengers" },
+        ],
+      })
+      .populate({
+        path: "rideBooked",
+        populate: [{ path: "profile" }, { path: "ride" }],
+      })
+      .populate("inbox")
+      .exec();
+
+    return res.status(200).json({
+      success: true,
+      data: userDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
     });
   }
 };
@@ -304,6 +388,11 @@ exports.deleteAccount = async (req, res) => {
     // Delete Assosiated BookedRide with the User
     await BookedRide.findByIdAndDelete({
       _id: new mongoose.Types.ObjectId(user.rideBooked),
+    });
+
+    // Delete Assosiated Inbox messages with the User
+    await Inbox.findByIdAndDelete({
+      _id: new mongoose.Types.ObjectId(user.inbox),
     });
 
     // Now Delete User
