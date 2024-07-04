@@ -430,6 +430,7 @@ exports.autoDeleteRide = async (req, res) => {
         path: "rideBooked",
         populate: [{ path: "profile" }, { path: "ride" }],
       })
+      .populate("inbox")
       .exec();
 
     return res.json({
