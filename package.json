@@ -25,6 +25,7 @@
     "nanoid": "^5.0.7",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.12",
-    "otp-generator": "^4.0.1"
+    "otp-generator": "^4.0.1",
+    "socket.io": "^4.7.5"
   }
 }
