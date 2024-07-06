@@ -80,7 +80,10 @@ io.on("connection", (socket) => {
 });
 
 app.get("/", (req, res) => {
-  console.log("Server is running perfectly!");
+  return res.json({
+    success: true,
+    message: "Your server is up and running perfectly...",
+  });
 });
 
 app.get("/api/v1/messages/:roomId", auth, async (req, res) => {
