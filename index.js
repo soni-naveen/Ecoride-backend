@@ -13,6 +13,7 @@ const cors = require("cors");
 require("dotenv").config();
 const http = require("http");
 const socketIo = require("socket.io");
+const { auth } = require("./middlewares/auth");
 const Message = require("./models/Message");
 
 //setting up port number
@@ -78,7 +79,11 @@ io.on("connection", (socket) => {
   });
 });
 
-app.get("/api/v1/messages/:roomId", async (req, res) => {
+app.get("/", async (req, res) => {
+  console.log("Server is running perfectly!");
+});
+
+app.get("/api/v1/messages/:roomId", auth, async (req, res) => {
   try {
     const { roomId } = req.params;
     const messages = await Message.find({
