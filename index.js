@@ -79,7 +79,7 @@ io.on("connection", (socket) => {
   });
 });
 
-app.get("/", async (req, res) => {
+app.get("/", (req, res) => {
   console.log("Server is running perfectly!");
 });
 
