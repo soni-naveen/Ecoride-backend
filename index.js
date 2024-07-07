@@ -55,7 +55,9 @@ app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/reach", contactUsRoute);
 app.use("/api/v1/ride", rideRoute);
 
-io.on("connection", (socket) => {
+const namespace = io.of('/api/v1');
+
+namespace.on("connection", (socket) => {
   console.log("New client connected", socket.id);
 
   socket.on("joinRoom", ({ roomId }) => {
