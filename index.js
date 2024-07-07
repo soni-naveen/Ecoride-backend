@@ -10,11 +10,11 @@ const { cloudinaryConnect } = require("./config/cloudinary");
 const fileUpload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-require("dotenv").config();
+const { auth } = require("./middlewares/auth");
 const http = require("http");
 const socketIo = require("socket.io");
-const { auth } = require("./middlewares/auth");
 const Message = require("./models/Message");
+require("dotenv").config();
 
 //setting up port number
 const PORT = process.env.PORT || 4000;
@@ -55,10 +55,9 @@ app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/reach", contactUsRoute);
 app.use("/api/v1/ride", rideRoute);
 
-const namespace = io.of('/api/v1');
-
-namespace.on("connection", (socket) => {
-  console.log("New client connected", socket.id);
+io.on("connection", (socket) => {
+  // console.log("New client connected", socket.id);
+  console.log("New client connected");
 
   socket.on("joinRoom", ({ roomId }) => {
     socket.join(roomId);
