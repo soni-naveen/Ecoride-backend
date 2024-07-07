@@ -32,10 +32,7 @@ const corsOptions = {
 
 const server = http.createServer(app);
 const io = socketIo(server, {
-  cors: {
-    origin: `${process.env.CORS_ORIGIN}/api/v1`,
-    credentials: true,
-  },
+  cors: corsOptions,
 });
 
 // Middlewares
