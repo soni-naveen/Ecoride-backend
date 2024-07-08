@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Ride = require("../models/Ride");
 const BookedRide = require("../models/BookedRide");
 const Inbox = require("../models/Inbox");
+const Chat = require("../models/Chat");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const {
   deletedAccountInfoMail,
@@ -302,6 +303,36 @@ exports.getInboxMessages = async (req, res) => {
     return res.status(200).json({
       success: true,
       data: inbox,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.getChats = async (req, res) => {
+  try {
+    const id = req.user.id;
+
+    const userDetails = await User.findById(id);
+    const email = userDetails.email;
+
+    const chats = await Chat.find({
+      $or: [{ user1: email }, { user2: email }],
+    });
+
+    if (!chats || chats.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Could not fetch messages.`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: chats,
     });
   } catch (error) {
     return res.status(500).json({

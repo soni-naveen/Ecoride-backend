@@ -14,6 +14,8 @@ const { auth } = require("./middlewares/auth");
 const http = require("http");
 const socketIo = require("socket.io");
 const Message = require("./models/Message");
+const Profile = require("./models/Profile");
+const Chat = require("./models/Chat");
 require("dotenv").config();
 
 //setting up port number
@@ -57,26 +59,42 @@ app.use("/api/v1/ride", rideRoute);
 
 io.on("connection", (socket) => {
   // console.log("New client connected", socket.id);
-  console.log("New client connected");
 
   socket.on("joinRoom", ({ roomId }) => {
     socket.join(roomId);
   });
 
-  socket.on("sendMessage", async ({ roomId, sender, receiver, content }) => {
-    try {
-      const message = new Message({ sender, receiver, content });
-      await message.save();
-      io.to(roomId).emit("message", message);
-    } catch (error) {
-      console.error("Error saving message:", error);
-      socket.emit("error", "Failed to save message");
+  socket.on(
+    "sendMessage",
+    async ({ roomId, chatLink, sender, receiver, content }) => {
+      try {
+        const message = new Message({ sender, receiver, content });
+        await message.save();
+        io.to(roomId).emit("message", message);
+
+        const user1 = await Profile.findById(sender);
+        const user2 = await Profile.findById(receiver);
+
+        let chat = await Chat.findOne({ chatLink: chatLink });
+
+        // If chat doesn't exist, create a new one
+        if (!chat) {
+          chat = new Chat({
+            chatLink,
+            user1: user1.email,
+            user2: user2.email,
+          });
+          await chat.save();
+        }
+      } catch (error) {
+        console.error("Error saving message:", error);
+        socket.emit("error", "Failed to save message");
+      }
     }
-  });
+  );
 
   socket.on("disconnect", (reason) => {
     // console.log("Client disconnected", socket.id, reason);
-    console.log("Client disconnected");
   });
 });
 

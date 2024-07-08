@@ -11,6 +11,7 @@ const {
   verifyProfile,
   fullProfile,
   getInboxMessages,
+  getChats,
   deleteInboxMessage,
 } = require("../controllers/Profile");
 
@@ -20,6 +21,7 @@ const {
 
 router.post("/fullProfile", fullProfile);
 router.post("/getInboxMessages", getInboxMessages);
+router.get("/getChats", auth, getChats);
 router.post("/deleteInboxMessage", auth, deleteInboxMessage);
 router.get("/getUserDetails", auth, getAllUserDetails);
 router.put("/completeProfile", auth, completeProfile);
