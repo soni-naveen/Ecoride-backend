@@ -80,7 +80,7 @@ io.on("connection", (socket) => {
         // If chat doesn't exist, create a new one
         if (!chat) {
           chat = new Chat({
-            chatLink,
+            chatLink: `https://theecoride.in/chats/${sender}/${receiver}`,
             user1: user1.email,
             user2: user2.email,
           });
