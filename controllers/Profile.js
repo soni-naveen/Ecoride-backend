@@ -315,13 +315,16 @@ exports.getInboxMessages = async (req, res) => {
 exports.getChats = async (req, res) => {
   try {
     const id = req.user.id;
-
     const userDetails = await User.findById(id);
-    const email = userDetails.email;
 
     const chats = await Chat.find({
-      $or: [{ user1: email }, { user2: email }],
-    });
+      $or: [
+        { user1: userDetails.additionalDetails },
+        { user2: userDetails.additionalDetails },
+      ],
+    })
+      .populate("user1")
+      .populate("user2");
 
     if (!chats || chats.length === 0) {
       return res.status(400).json({

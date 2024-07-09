@@ -81,8 +81,8 @@ io.on("connection", (socket) => {
         if (!chat) {
           chat = new Chat({
             chatLink,
-            user1: user1.email,
-            user2: user2.email,
+            user1: user1,
+            user2: user2,
           });
           await chat.save();
         }
