@@ -3,9 +3,8 @@ require("dotenv").config();
 
 // Connection establishment
 exports.connect = () => {
-  mongoose.connect(process.env.DATABASE_URL);
-
   try {
+    mongoose.connect(process.env.DATABASE_URL);
     console.log("DB connected successfully");
   } catch (error) {
     console.log("Issue in DB connection");
