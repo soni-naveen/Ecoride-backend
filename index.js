@@ -21,9 +21,6 @@ require("dotenv").config();
 //setting up port number
 const PORT = process.env.PORT || 4000;
 
-//cookie-parser
-app.use(cookieParser());
-
 //connect to the database
 database.connect();
 
