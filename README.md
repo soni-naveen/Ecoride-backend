@@ -1,5 +1,5 @@
 # Ecoride Backend
-This is the repository for the backend for our website ecoride
+This is the repository of backend our website Ecoride.
 
 ### Install dependencies 
 ```
