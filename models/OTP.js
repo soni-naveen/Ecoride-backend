@@ -22,7 +22,6 @@ const OTPSchema = new mongoose.Schema(
   { versionKey: false }
 );
 
-// Define a function to send emails
 async function sendVerificationEmail(email, otp) {
   // Create a transporter to send emails
   // Define the email options
@@ -34,10 +33,7 @@ async function sendVerificationEmail(email, otp) {
       emailTemplate(otp)
     );
     if (mailResponse) {
-      console.log(
-        "Email sent successfully"
-        // mailResponse.response
-      );
+      console.log("Email sent successfully");
     } else {
       console.log("Error: Mail response is undefined");
     }

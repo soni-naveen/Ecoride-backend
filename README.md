@@ -7,5 +7,5 @@ npm install
 ```
 ### Start server
 ```
-node server.js
+npm run dev
 ```

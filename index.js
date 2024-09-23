@@ -25,7 +25,8 @@ const PORT = process.env.PORT || 4000;
 database.connect();
 
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN,
+  // origin: process.env.CORS_ORIGIN,
+  origin: "*",
   credentials: true,
 };
 
@@ -80,10 +81,12 @@ io.on("connection", (socket) => {
         const user1 = await Profile.findById(sender);
         const user2 = await Profile.findById(receiver);
 
-        let chatParts = chatLink.split("/").slice(2);
-        chatParts.sort();
-        let normalizedChatLink = `/chat/${chatParts[0]}/${chatParts[1]}`;
-        let chat = await Chat.findOne({ chatLink: normalizedChatLink });
+        let chat = await Chat.findOne({
+          $or: [
+            { user1: user1, user2: user2 },
+            { user1: user2, user2: user1 },
+          ],
+        });
 
         // If chat doesn't exist, create a new one
         if (!chat) {
