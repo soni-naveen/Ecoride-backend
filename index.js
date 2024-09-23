@@ -29,10 +29,7 @@ const corsOptions = {
   credentials: true,
 };
 
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: corsOptions,
-});
+// The credentials option allows cookies and other credentials to be sent with requests, which is important for maintaining authenticated sessions.
 
 // Middlewares
 app.use(express.json());
@@ -54,9 +51,20 @@ app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/reach", contactUsRoute);
 app.use("/api/v1/ride", rideRoute);
 
+app.get("/", (req, res) => {
+  return res.json({
+    success: true,
+    message: "Your server is up and running perfectly...",
+  });
+});
+
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: corsOptions,
+});
+
 io.on("connection", (socket) => {
   // console.log("New client connected", socket.id);
-
   socket.on("joinRoom", ({ roomId }) => {
     socket.join(roomId);
   });
@@ -72,7 +80,10 @@ io.on("connection", (socket) => {
         const user1 = await Profile.findById(sender);
         const user2 = await Profile.findById(receiver);
 
-        let chat = await Chat.findOne({ chatLink: chatLink });
+        let chatParts = chatLink.split("/").slice(2);
+        chatParts.sort();
+        let normalizedChatLink = `/chat/${chatParts[0]}/${chatParts[1]}`;
+        let chat = await Chat.findOne({ chatLink: normalizedChatLink });
 
         // If chat doesn't exist, create a new one
         if (!chat) {
@@ -95,13 +106,6 @@ io.on("connection", (socket) => {
   });
 });
 
-app.get("/", (req, res) => {
-  return res.json({
-    success: true,
-    message: "Your server is up and running perfectly...",
-  });
-});
-
 app.get("/api/v1/messages/:roomId", auth, async (req, res) => {
   try {
     const { roomId } = req.params;
@@ -119,5 +123,3 @@ app.get("/api/v1/messages/:roomId", auth, async (req, res) => {
 });
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// The credentials option allows cookies and other credentials to be sent with requests, which is important for maintaining authenticated sessions.
