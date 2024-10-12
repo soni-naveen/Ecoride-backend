@@ -25,8 +25,7 @@ const PORT = process.env.PORT || 4000;
 database.connect();
 
 const corsOptions = {
-  // origin: process.env.CORS_ORIGIN,
-  origin: "*",
+  origin: process.env.CORS_ORIGIN,
   credentials: true,
 };
 
