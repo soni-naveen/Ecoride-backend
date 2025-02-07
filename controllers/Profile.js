@@ -429,6 +429,13 @@ exports.deleteAccount = async (req, res) => {
       _id: new mongoose.Types.ObjectId(user.inbox),
     });
 
+    await Chat.findOneAndDelete({
+      $or: [
+        { user1: new mongoose.Types.ObjectId(user.additionalDetails) },
+        { user2: new mongoose.Types.ObjectId(user.additionalDetails) },
+      ],
+    });
+
     // Now Delete User
     await User.findByIdAndDelete({ _id: id });
 
