@@ -47,6 +47,12 @@ exports.resetPassword = async (req, res) => {
   try {
     const { password, confirmPassword, token } = req.body;
 
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: "Password length must be 8",
+      });
+    }
     if (confirmPassword !== password) {
       return res.status(400).json({
         success: false,
