@@ -48,14 +48,14 @@ exports.resetPassword = async (req, res) => {
     const { password, confirmPassword, token } = req.body;
 
     if (confirmPassword !== password) {
-      return res.json({
+      return res.status(400).json({
         success: false,
-        message: "Password and Confirm Password Does not Match",
+        message: "Password and Confirm password does not match",
       });
     }
     const userDetails = await User.findOne({ token: token });
     if (!userDetails) {
-      return res.json({
+      return res.status(401).json({
         success: false,
         message: "Token is Invalid",
       });
@@ -63,7 +63,7 @@ exports.resetPassword = async (req, res) => {
     if (!(userDetails.resetPasswordExpires > Date.now())) {
       return res.status(403).json({
         success: false,
-        message: `Token is Expired, Please Regenerate Your Token`,
+        message: `Token is Expired, Please regenerate your token`,
       });
     }
     const encryptedPassword = await bcrypt.hash(password, 10);
@@ -74,10 +74,10 @@ exports.resetPassword = async (req, res) => {
     );
     res.json({
       success: true,
-      message: `Password Reset Successful`,
+      message: `Password Reset Successfully`,
     });
   } catch (error) {
-    return res.json({
+    return res.status(500).json({
       error: error.message,
       success: false,
       message: `Some Error in Updating the Password`,

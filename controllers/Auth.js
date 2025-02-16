@@ -305,11 +305,23 @@ exports.changePassword = async (req, res) => {
       oldPassword,
       userDetails.password
     );
+
     if (!isPasswordMatch) {
       // If old password does not match, return a 401 (Unauthorized) error
       return res
         .status(401)
-        .json({ success: false, message: "The password is incorrect" });
+        .json({ success: false, message: "Incorrect Password" });
+    }
+    if (newPassword.length < 8) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Password length atleast 8" });
+    }
+    if (oldPassword === newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a new password!",
+      });
     }
 
     // Update password
@@ -344,7 +356,7 @@ exports.changePassword = async (req, res) => {
     // Return success response
     return res
       .status(200)
-      .json({ success: true, message: "Password updated successfully" });
+      .json({ success: true, message: "Password Updated Successfully" });
   } catch (error) {
     // If there's an error updating the password, log the error and return a 500 (Internal Server Error) error
     console.error("Error occurred while updating password:", error);
