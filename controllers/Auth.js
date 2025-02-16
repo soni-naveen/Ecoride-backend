@@ -278,7 +278,7 @@ exports.login = async (req, res) => {
       //password do not match
       return res.status(401).json({
         success: false,
-        message: "Password Incorrect",
+        message: "Incorrect Password",
       });
     }
   } catch (error) {
@@ -323,7 +323,7 @@ exports.changePassword = async (req, res) => {
     if (oldPassword === newPassword) {
       return res.status(400).json({
         success: false,
-        message: "Please enter a new password!",
+        message: "Please enter a New Password!",
       });
     }
 
