@@ -441,7 +441,7 @@ exports.deleteAccount = async (req, res) => {
 
     await mailSender(
       email,
-      "Account Deleted Confirmation",
+      "Account Deleted Successfully",
       accountDeletedMail(email)
     );
     await mailSender(

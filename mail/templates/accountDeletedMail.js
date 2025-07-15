@@ -59,7 +59,7 @@ exports.accountDeletedMail = (email) => {
               <div class="message">Your account deleted successfully</div>
               <div class="body">
                   <p>Dear ${email},</p>
-                  <p>We are writing to confirm that your request to delete your account with EcoRide has been successfully processed.</p>
+                  <p>We are writing to confirm that your request to delete your account with Ecoride has been successfully processed.</p>
                   <p>We are sorry to see you go and would like to take this opportunity to thank you for having been a part of our community. Your feedback and participation have been valuable to us, and we hope you had a positive experience during your time with us.</p>
               </div>
               <div class="support">If you have any further questions or need immediate assistance, please feel free to reach
