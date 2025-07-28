@@ -8,37 +8,35 @@ exports.resetPasswordToken = async (req, res) => {
   try {
     const email = req.body.email;
     const user = await User.findOne({ email: email });
-    if (!user) {
-      return res.json({
-        error: `This email is not registered with us.`,
-        success: false,
-        message: `Email is not registered`,
-      });
+
+    // Always return success to prevent email enumeration attacks
+    // But only send email if user exists
+    if (user) {
+      const token = crypto.randomBytes(20).toString("hex");
+
+      await User.findOneAndUpdate(
+        { email: email },
+        {
+          token: token,
+          resetPasswordExpires: Date.now() + 300000, // 5 minutes
+        },
+        { new: true }
+      );
+
+      await mailSender(email, "Password Reset", resetPasswordMail(token));
     }
-    const token = crypto.randomBytes(20).toString("hex");
 
-    const updatedDetails = await User.findOneAndUpdate(
-      { email: email },
-      {
-        token: token,
-        resetPasswordExpires: Date.now() + 300000, // 5 minutes
-      },
-      { new: true }
-    );
-    // console.log("DETAILS", updatedDetails);
-
-    await mailSender(email, "Password Reset", resetPasswordMail(token));
-
+    // Always return success message
     res.json({
       success: true,
       message:
-        "Email Sent Successfully, Please Check Your Email to Continue Further",
+        "If an account with that email exists, we've sent a password reset link",
     });
   } catch (error) {
     return res.json({
       error: error.message,
       success: false,
-      message: `Some Error in Sending the Reset Email`,
+      message: `Internal Server Error`,
     });
   }
 };
