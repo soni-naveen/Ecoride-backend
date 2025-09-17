@@ -256,7 +256,7 @@ exports.login = async (req, res) => {
         id: user._id,
       };
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "24h",
+        expiresIn: "2d",
       });
       // user = user.toObject();
       user.token = token;
@@ -264,7 +264,7 @@ exports.login = async (req, res) => {
 
       //create cookie & send response
       const options = {
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
         httpOnly: true,
         // A cookie with the HttpOnly attribute is inaccessible to the JavaScript Document.cookie API; it's only sent to the server
       };
